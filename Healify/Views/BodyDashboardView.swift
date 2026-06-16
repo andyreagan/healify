@@ -98,6 +98,7 @@ struct BodyDashboardView: View {
                 } label: {
                     Label("Add", systemImage: "plus.circle.fill").labelStyle(.titleAndIcon)
                 }
+                .accessibilityIdentifier("addMenu")
             }
             .padding(.horizontal)
             .padding(.bottom, 8)

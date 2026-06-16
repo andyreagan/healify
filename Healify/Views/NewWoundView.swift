@@ -31,6 +31,7 @@ struct NewWoundView: View {
                 // Text fields kept at the top so the keyboard never covers them.
                 Section {
                     TextField("Name (e.g. Knee scrape)", text: $name)
+                        .accessibilityIdentifier("woundName")
                     TextField("Location detail (optional, e.g. 2cm below kneecap)", text: $detail)
                     Picker("Type", selection: $kind) {
                         ForEach(WoundKind.allCases) { k in

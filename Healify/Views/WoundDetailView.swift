@@ -18,6 +18,7 @@ struct WoundDetailView: View {
     @State private var showingPhotoSource = false
     @State private var showingEdit = false
     @State private var showingAddNote = false
+    @State private var editingNote: JournalNote?
     @State private var importing = false
 
     /// A merged, newest-first timeline of photos and notes.
@@ -79,6 +80,7 @@ struct WoundDetailView: View {
         }
         .sheet(isPresented: $showingEdit) { NewWoundView(existing: wound) }
         .sheet(isPresented: $showingAddNote) { AddNoteView(wound: wound) }
+        .sheet(item: $editingNote) { note in AddNoteView(wound: wound, existing: note) }
     }
 
     // MARK: Timeline
@@ -119,7 +121,12 @@ struct WoundDetailView: View {
             }
             .buttonStyle(.plain)
         case .note(let note):
-            NoteCard(note: note)
+            Button {
+                editingNote = note
+            } label: {
+                NoteCard(note: note)
+            }
+            .buttonStyle(.plain)
         }
     }
 

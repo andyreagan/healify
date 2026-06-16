@@ -45,15 +45,29 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.andyreagan.healify.tests
         DEVELOPMENT_TEAM: R47VDUQCBQ
+  HealifyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: HealifyUITests
+    dependencies:
+      - target: Healify
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.andyreagan.healify.uitests
+        DEVELOPMENT_TEAM: R47VDUQCBQ
 schemes:
   Healify:
     build:
       targets:
         Healify: all
         HealifyTests: [test]
+        HealifyUITests: [test]
     test:
       targets:
         - HealifyTests
+        - HealifyUITests
     run:
       config: Debug
     archive:

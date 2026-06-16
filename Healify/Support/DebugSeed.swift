@@ -31,9 +31,11 @@ enum DebugSeed {
         n2.wound = knee
         knee.notes.append(contentsOf: [n1, n2])
 
-        // Three photos with steadily fading redness to exercise the analyzer.
+        // Three photos with fading redness and *different aspect ratios*
+        // (portrait, landscape, square) to verify uniform timeline sizing.
+        let sizes = [CGSize(width: 300, height: 520), CGSize(width: 520, height: 300), CGSize(width: 400, height: 400)]
         for (i, redness) in [0.95, 0.6, 0.3].enumerated() {
-            let image = makeWoundImage(redness: redness)
+            let image = makeWoundImage(redness: redness, size: sizes[i])
             if let name = try? ImageStore.saveImage(image) {
                 let p = WoundPhoto(imageFilename: name, captureDate: day(-12 + i * 5))
                 p.caption = i == 0 ? "Right after it happened" : ""
@@ -104,13 +106,13 @@ enum DebugSeed {
 
     /// A synthetic skin-tone tile with a reddish "wound" blob whose intensity is
     /// driven by `redness` (1 = angry, 0 = calm).
-    private static func makeWoundImage(redness: Double) -> UIImage {
-        let size = CGSize(width: 400, height: 400)
+    private static func makeWoundImage(redness: Double, size: CGSize = CGSize(width: 400, height: 400)) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { ctx in
             UIColor(red: 0.86, green: 0.70, blue: 0.60, alpha: 1).setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
-            let blob = CGRect(x: 120, y: 120, width: 160, height: 160)
+            let dim = min(size.width, size.height) * 0.4
+            let blob = CGRect(x: (size.width - dim) / 2, y: (size.height - dim) / 2, width: dim, height: dim)
             let r = 0.55 + 0.40 * redness
             let g = 0.30 - 0.10 * redness
             let b = 0.28 - 0.10 * redness

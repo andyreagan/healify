@@ -29,4 +29,30 @@ struct NoteDraft {
             expectedHealingDays: (isClinician && hasExpectedDays) ? Int(expectedDays) : nil
         )
     }
+
+    /// Writes the draft's values back onto an existing note.
+    func apply(to note: JournalNote) {
+        note.timestamp = timestamp
+        note.text = text
+        note.painLevel = recordPain ? Int(pain) : nil
+        note.symptoms = Array(symptoms)
+        note.isClinicianGuidance = isClinician
+        note.expectedHealingDays = (isClinician && hasExpectedDays) ? Int(expectedDays) : nil
+    }
+}
+
+extension NoteDraft {
+    /// Seeds a draft from an existing note (for editing). In an extension so the
+    /// synthesized `NoteDraft()` memberwise initializer is preserved.
+    init(from note: JournalNote) {
+        self.init()
+        timestamp = note.timestamp
+        text = note.text
+        recordPain = note.painLevel != nil
+        pain = Double(note.painLevel ?? 3)
+        symptoms = Set(note.symptoms)
+        isClinician = note.isClinicianGuidance
+        hasExpectedDays = note.expectedHealingDays != nil
+        expectedDays = Double(note.expectedHealingDays ?? 14)
+    }
 }

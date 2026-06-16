@@ -11,7 +11,9 @@ struct HealifyApp: App {
     /// versioned schema + migration plan so user data survives schema changes.
     let container: ModelContainer = {
         let schema = Schema(versionedSchema: HealifySchemaV1.self)
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        // UI tests launch with a clean, in-memory store for determinism.
+        let inMemory = ProcessInfo.processInfo.environment["HEALIFY_UITEST"] == "1"
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
         do {
             return try ModelContainer(for: schema, migrationPlan: HealifyMigrationPlan.self, configurations: config)
         } catch {

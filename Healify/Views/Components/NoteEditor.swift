@@ -17,6 +17,7 @@ struct NoteEditor: View {
                 }
                 TextField(textPrompt, text: $draft.text, axis: .vertical)
                     .lineLimit(2...6)
+                    .accessibilityIdentifier("noteText")
             }
 
             Section("Pain") {
