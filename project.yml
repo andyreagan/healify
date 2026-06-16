@@ -25,9 +25,11 @@ targets:
         # on a free account; the body map still works via Settings > Body type.
         # To enable on a paid account, uncomment the line below and regenerate:
         # CODE_SIGN_ENTITLEMENTS: Healify/Resources/Healify.entitlements
-        PRODUCT_BUNDLE_IDENTIFIER: com.healify.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.andyreagan.healify
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
         CODE_SIGN_STYLE: Automatic
+        # Free "Personal Team" ID, so xcodegen doesn't reset signing on regen.
+        DEVELOPMENT_TEAM: R47VDUQCBQ
