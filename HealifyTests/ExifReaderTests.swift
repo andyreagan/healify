@@ -27,7 +27,7 @@ import UniformTypeIdentifiers
 
     @Test func returnsNilWithoutCaptureMetadata() {
         let image = TestSupport.makeImage(width: 10, height: 10)
-        let data = try? #require(image.jpegData(compressionQuality: 0.8))
-        #expect(ExifReader.captureDate(from: data ?? Data()) == nil)
+        let data = image.jpegData(compressionQuality: 0.8) ?? Data()
+        #expect(ExifReader.captureDate(from: data) == nil)
     }
 }

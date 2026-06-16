@@ -11,8 +11,11 @@ struct HealifyApp: App {
     /// versioned schema + migration plan so user data survives schema changes.
     let container: ModelContainer = {
         let schema = Schema(versionedSchema: HealifySchemaV1.self)
-        // UI tests launch with a clean, in-memory store for determinism.
-        let inMemory = ProcessInfo.processInfo.environment["HEALIFY_UITEST"] == "1"
+        // Use an in-memory store under test: UI tests want a clean slate, and
+        // unit tests host this app — its on-disk store is irrelevant to them and
+        // can fail to create on a fresh CI simulator.
+        let env = ProcessInfo.processInfo.environment
+        let inMemory = env["HEALIFY_UITEST"] == "1" || env["XCTestConfigurationFilePath"] != nil
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
         do {
             return try ModelContainer(for: schema, migrationPlan: HealifyMigrationPlan.self, configurations: config)

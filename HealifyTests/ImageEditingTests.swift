@@ -24,7 +24,8 @@ import UIKit
     @Test func cropTakesNormalizedRegion() {
         let image = TestSupport.makeImage(width: 200, height: 100)
         let cropped = ImageEditing.cropped(image, to: CGRect(x: 0, y: 0, width: 0.5, height: 1.0))
-        let cg = try? #require(cropped.cgImage)
+        let cg = cropped.cgImage
+        #expect(cg != nil)
         // Left half → ~100 x 100 pixels.
         #expect(abs((cg?.width ?? 0) - 100) <= 1)
         #expect(abs((cg?.height ?? 0) - 100) <= 1)
