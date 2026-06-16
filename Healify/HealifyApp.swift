@@ -26,13 +26,25 @@ struct HealifyApp: App {
         }
     }()
 
+    /// True only when this app process is hosting unit tests (not when it's the
+    /// app-under-test for UI tests, which runs in a separate process).
+    private var isHostingUnitTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environmentObject(settings)
-                .environmentObject(healingService)
-                .environmentObject(healthProfile)
-                .tint(.accentColor)
+            if isHostingUnitTests {
+                // Inert host: unit tests exercise logic via their own model
+                // containers, so don't run RootView / health / seeding here.
+                Color.clear
+            } else {
+                RootView()
+                    .environmentObject(settings)
+                    .environmentObject(healingService)
+                    .environmentObject(healthProfile)
+                    .tint(.accentColor)
+            }
         }
         .modelContainer(container)
     }

@@ -30,14 +30,26 @@ jobs:
       - name: Show available simulators
         run: xcrun simctl list devices available | grep -i iphone || true
 
-      - name: Run tests
+      - name: Unit tests
         run: |
           set -o pipefail
           xcodebuild test \
             -project Healify.xcodeproj \
             -scheme Healify \
             -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
-            -resultBundlePath TestResults.xcresult \
+            -only-testing:HealifyTests \
+            -resultBundlePath UnitResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      - name: UI tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Healify.xcodeproj \
+            -scheme Healify \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -only-testing:HealifyUITests \
+            -resultBundlePath UIResults.xcresult \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
       - name: Upload results
@@ -45,5 +57,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TestResults
-          path: TestResults.xcresult
+          path: "*.xcresult"
           if-no-files-found: ignore

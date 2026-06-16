@@ -18,8 +18,11 @@ final class HealthProfileService: ObservableObject {
     /// Requests read access (idempotent) and loads characteristics. Safe to call
     /// repeatedly; only prompts the first time.
     func load() async {
-        // Escape hatch for automated/headless runs to avoid the auth modal.
-        if ProcessInfo.processInfo.environment["HEALIFY_NO_HEALTH"] == "1" { return }
+        // Skip for automated/headless runs (avoids the auth modal) and whenever
+        // hosting tests — calling HealthKit without the entitlement on a fresh
+        // CI simulator can trap the host process.
+        let env = ProcessInfo.processInfo.environment
+        if env["HEALIFY_NO_HEALTH"] == "1" || env["XCTestConfigurationFilePath"] != nil { return }
         guard isHealthAvailable else { return }
         let types: Set<HKObjectType> = [
             HKObjectType.characteristicType(forIdentifier: .biologicalSex)!,
