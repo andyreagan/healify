@@ -5,25 +5,19 @@ import UIKit
 
 /// Shared helpers for the test suites.
 enum TestSupport {
+    /// Keeps test containers alive for the whole test run. A `ModelContext` does
+    /// not appear to retain its `ModelContainer` strongly, so returning
+    /// `container.mainContext` from a function let the container deallocate and
+    /// caused use-after-free crashes on CI. Holding a reference here fixes that.
+    @MainActor private static var retainedContainers: [ModelContainer] = []
+
     /// A fresh in-memory SwiftData context using the app's versioned schema.
     @MainActor
     static func makeContext() throws -> ModelContext {
         let schema = Schema(versionedSchema: HealifySchemaV1.self)
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: config)
-        return container.mainContext
-    }
-
-    /// A fresh on-disk SwiftData context at a unique temp URL — needed where
-    /// behavior must match the shipping app exactly (e.g. cascade deletes,
-    /// which in-memory stores don't always honor).
-    @MainActor
-    static func makeDiskContext() throws -> ModelContext {
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("healify-test-\(UUID().uuidString).store")
-        let schema = Schema(versionedSchema: HealifySchemaV1.self)
-        let config = ModelConfiguration(schema: schema, url: url)
-        let container = try ModelContainer(for: schema, configurations: config)
+        retainedContainers.append(container)
         return container.mainContext
     }
 
