@@ -33,3 +33,12 @@ targets:
         CODE_SIGN_STYLE: Automatic
         # Free "Personal Team" ID, so xcodegen doesn't reset signing on regen.
         DEVELOPMENT_TEAM: R47VDUQCBQ
+schemes:
+  Healify:
+    build:
+      targets:
+        Healify: all
+    run:
+      config: Debug
+    archive:
+      config: Release
