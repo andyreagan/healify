@@ -70,6 +70,36 @@ enum DebugSeed {
         for photo in photos { photo.healingScore = scores[photo.id] }
     }
 
+    /// Round-trips the current store through export → import (fresh in-memory
+    /// store) and prints the result. Run with SIMCTL_CHILD_HEALIFY_SELFTEST=1
+    /// and `simctl launch --console`.
+    @MainActor
+    static func selfTestBackupIfRequested(_ context: ModelContext) {
+        guard flag("HEALIFY_SELFTEST") else { return }
+        do {
+            let url = try DataExport.makeBackup(context)
+            let bytes = (try? Data(contentsOf: url))?.count ?? 0
+
+            let schema = Schema(versionedSchema: HealifySchemaV1.self)
+            let cfg = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            let dest = try ModelContainer(for: schema, configurations: cfg).mainContext
+            let summary = try DataImport.restore(from: url, into: dest)
+
+            let src = (try? context.fetch(FetchDescriptor<Wound>())) ?? []
+            let dst = (try? dest.fetch(FetchDescriptor<Wound>())) ?? []
+            func counts(_ w: [Wound]) -> String { "W\(w.count) P\(w.reduce(0){$0+$1.photos.count}) N\(w.reduce(0){$0+$1.notes.count})" }
+            print("SELFTEST backup: file=\(bytes)B  src(\(counts(src)))  dst(\(counts(dst)))  added(W\(summary.woundsAdded) P\(summary.photosAdded) N\(summary.notesAdded))")
+            if let f = dst.flatMap({ $0.photos }).first?.imageFilename {
+                print("SELFTEST image restored: \(ImageStore.loadData(f)?.count ?? 0)B")
+            }
+            // Re-import the same file: everything should be skipped (idempotent).
+            let again = try DataImport.restore(from: url, into: dest)
+            print("SELFTEST reimport: added W\(again.woundsAdded) skipped W\(again.woundsSkipped) (expect added 0)")
+        } catch {
+            print("SELFTEST backup FAILED: \(error)")
+        }
+    }
+
     private static func day(_ offset: Int) -> Date { Date().addingTimeInterval(Double(offset) * 86_400) }
 
     /// A synthetic skin-tone tile with a reddish "wound" blob whose intensity is

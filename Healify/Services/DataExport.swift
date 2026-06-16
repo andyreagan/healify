@@ -1,13 +1,14 @@
 import Foundation
 import SwiftData
 
-/// Exports the entire journal — structured data *and* image files — into a
-/// single shareable `.zip`. This is the hard safety net: regardless of any
-/// future schema change, the user can export, and we can restore from this
-/// bundle. The archive is self-describing (`schemaVersion`) for future import.
+/// Exports/imports the entire journal as a single self-contained `.json` backup
+/// with images embedded (base64). One file → trivial, dependency-free round-trip
+/// (iOS has no built-in unzip), and a hard safety net independent of schema
+/// migrations: even a full delete/reinstall or a new phone can be restored.
 @MainActor
 enum DataExport {
     static let formatVersion = 1
+    static let fileExtension = "json"
 
     // MARK: Codable bundle
 
@@ -16,6 +17,8 @@ enum DataExport {
         var schemaVersion: String
         var exportedAt: Date
         var wounds: [WoundDTO]
+        /// imageFilename → base64-encoded JPEG bytes.
+        var images: [String: String]
     }
 
     struct WoundDTO: Codable {
@@ -55,41 +58,37 @@ enum DataExport {
 
     // MARK: Export
 
-    /// Builds the backup zip and returns its URL (in a temp dir). Caller presents
-    /// a share sheet; the OS copies it wherever the user chooses.
+    /// Builds the backup file and returns its URL (in a temp dir). Caller
+    /// presents a share sheet; the OS copies it wherever the user chooses.
     static func makeBackup(_ context: ModelContext) throws -> URL {
         let wounds = try context.fetch(FetchDescriptor<Wound>())
-        let bundle = Bundle(
-            formatVersion: formatVersion,
-            schemaVersion: HealifySchemaV1.versionIdentifier.description,
-            exportedAt: .now,
-            wounds: wounds.map(makeDTO)
-        )
 
-        let fm = FileManager.default
-        let work = fm.temporaryDirectory.appendingPathComponent("HealifyBackup-\(UUID().uuidString)", isDirectory: true)
-        let payload = work.appendingPathComponent("Healify Backup", isDirectory: true)
-        let imagesDir = payload.appendingPathComponent("images", isDirectory: true)
-        try fm.createDirectory(at: imagesDir, withIntermediateDirectories: true)
-
-        // data.json
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        try encoder.encode(bundle).write(to: payload.appendingPathComponent("data.json"), options: .atomic)
-
-        // image files
+        var images: [String: String] = [:]
         for wound in wounds {
             for photo in wound.photos {
-                let src = ImageStore.url(for: photo.imageFilename)
-                if fm.fileExists(atPath: src.path) {
-                    try? fm.copyItem(at: src, to: imagesDir.appendingPathComponent(photo.imageFilename))
+                if let data = ImageStore.loadData(photo.imageFilename) {
+                    images[photo.imageFilename] = data.base64EncodedString()
                 }
             }
         }
 
-        // Zip the payload folder using the OS coordinator (no third-party deps).
-        return try zip(directory: payload, into: work)
+        let bundle = Bundle(
+            formatVersion: formatVersion,
+            schemaVersion: HealifySchemaV1.versionIdentifier.description,
+            exportedAt: .now,
+            wounds: wounds.map(makeDTO),
+            images: images
+        )
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = .sortedKeys
+        let data = try encoder.encode(bundle)
+
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("Healify Backup \(filenameStamp()).\(fileExtension)")
+        try data.write(to: url, options: .atomic)
+        return url
     }
 
     private static func makeDTO(_ w: Wound) -> WoundDTO {
@@ -109,34 +108,7 @@ enum DataExport {
         )
     }
 
-    /// `NSFileCoordinator`'s `.forUploading` reading intent hands back a zipped
-    /// copy of a directory — the standard dependency-free way to make a zip.
-    private static func zip(directory: URL, into destDir: URL) throws -> URL {
-        var coordinatorError: NSError?
-        var thrown: Error?
-        var result: URL?
-
-        let stamp = ISO8601DateFormatter.filenameStamp()
-        let finalURL = destDir.appendingPathComponent("Healify Backup \(stamp).zip")
-
-        NSFileCoordinator().coordinate(readingItemAt: directory, options: .forUploading, error: &coordinatorError) { zippedURL in
-            do {
-                try FileManager.default.copyItem(at: zippedURL, to: finalURL)
-                result = finalURL
-            } catch {
-                thrown = error
-            }
-        }
-        if let coordinatorError { throw coordinatorError }
-        if let thrown { throw thrown }
-        guard let result else { throw CocoaError(.fileWriteUnknown) }
-        return result
-    }
-}
-
-private extension ISO8601DateFormatter {
-    /// A filesystem-friendly timestamp like "2026-06-16 1430".
-    static func filenameStamp() -> String {
+    private static func filenameStamp() -> String {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd HHmm"
         f.locale = Locale(identifier: "en_US_POSIX")

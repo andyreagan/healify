@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -9,6 +10,8 @@ struct SettingsView: View {
     @State private var showingDisclaimer = false
     @State private var exportURL: URL?
     @State private var exportError: String?
+    @State private var showingImporter = false
+    @State private var resultMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -43,10 +46,15 @@ struct SettingsView: View {
                     } label: {
                         Label("Export backup…", systemImage: "square.and.arrow.up")
                     }
+                    Button {
+                        showingImporter = true
+                    } label: {
+                        Label("Import backup…", systemImage: "square.and.arrow.down")
+                    }
                 } header: {
                     Text("Your data")
                 } footer: {
-                    Text("Saves all wounds, notes, and photos to a single .zip you can store in Files or iCloud. A good idea before updating the app.")
+                    Text("Export saves all wounds, notes, and photos to a single backup file you can keep in Files or iCloud — do this before updating the app, or to move to a new phone. Import merges a backup back in (existing entries are skipped).")
                 }
 
                 Section("Privacy") {
@@ -76,9 +84,15 @@ struct SettingsView: View {
             .sheet(item: $exportURL) { url in
                 ShareSheet(items: [url])
             }
+            .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.json]) { result in
+                importBackup(result)
+            }
             .alert("Export failed", isPresented: .init(get: { exportError != nil }, set: { if !$0 { exportError = nil } })) {
                 Button("OK", role: .cancel) {}
             } message: { Text(exportError ?? "") }
+            .alert("Backup", isPresented: .init(get: { resultMessage != nil }, set: { if !$0 { resultMessage = nil } })) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(resultMessage ?? "") }
         }
     }
 
@@ -110,6 +124,22 @@ struct SettingsView: View {
             exportURL = try DataExport.makeBackup(context)
         } catch {
             exportError = error.localizedDescription
+        }
+    }
+
+    private func importBackup(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            do {
+                let s = try DataImport.restore(from: url, into: context)
+                resultMessage = "Imported \(s.woundsAdded) wound\(s.woundsAdded == 1 ? "" : "s") "
+                    + "(\(s.photosAdded) photos, \(s.notesAdded) notes)."
+                    + (s.woundsSkipped > 0 ? " Skipped \(s.woundsSkipped) already present." : "")
+            } catch {
+                resultMessage = error.localizedDescription
+            }
+        case .failure(let error):
+            resultMessage = error.localizedDescription
         }
     }
 }

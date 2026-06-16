@@ -38,6 +38,7 @@ struct RootView: View {
     private func seedIfNeeded() {
         #if DEBUG
         DebugSeed.seedIfRequested(context)
+        DebugSeed.selfTestBackupIfRequested(context)
         if DebugSeed.shouldOpenFirst, path.isEmpty,
            let first = wounds.sorted(by: { $0.createdAt < $1.createdAt }).first {
             path = [first.id]

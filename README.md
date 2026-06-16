@@ -103,9 +103,12 @@ the HealthKit capability.
   fields, new models) migrate automatically with no data loss. Structural
   changes get an explicit `MigrationStage` so existing data is preserved — the
   app never silently wipes the store.
-- **Backups:** **Settings → Export backup…** writes a single `.zip` (a
-  `data.json` plus every image) you can save to Files or iCloud. Do this before
-  any risky update as a hard safety net.
+- **Backups:** **Settings → Export backup…** writes a single self-contained
+  JSON file (all structured data *and* every photo, embedded) you can save to
+  Files or iCloud. **Settings → Import backup…** restores it — merging in
+  anything not already present (idempotent; existing entries are skipped). This
+  survives a full delete/reinstall or a move to a new phone, so it's the real
+  safety net. Do an export before any risky update.
 
 ## Privacy
 
