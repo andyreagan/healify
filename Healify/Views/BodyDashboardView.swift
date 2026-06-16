@@ -6,7 +6,6 @@ import SwiftData
 /// into the wound's timeline.
 struct BodyDashboardView: View {
     @Environment(\.modelContext) private var context
-    @EnvironmentObject private var health: HealthProfileService
     @EnvironmentObject private var settings: AppSettings
     @Query(sort: \Wound.createdAt, order: .reverse) private var wounds: [Wound]
 
@@ -36,7 +35,7 @@ struct BodyDashboardView: View {
     var body: some View {
         ZStack {
             BodyMapView(
-                shape: settings.resolvedBodyShape(auto: health.bodyShape),
+                shape: settings.bodyShape,
                 bodyView: $bodyView,
                 markers: markers,
                 onTapRegion: handleTap
@@ -50,14 +49,13 @@ struct BodyDashboardView: View {
                 drawerContent
             }
         }
+        #if DEBUG
         .task {
-            await health.load()
-            #if DEBUG
             if ProcessInfo.processInfo.environment["HEALIFY_OPEN_NEW"] == "1", newWoundRequest == nil {
                 newWoundRequest = NewWoundRequest(region: BodyRegion(part: .forearm, side: .right, view: .front))
             }
-            #endif
         }
+        #endif
         .sheet(item: $newWoundRequest, onDismiss: navigateToCreatedWound) { request in
             NewWoundView(presetRegion: request.region, onCreate: { createdWoundID = $0.id })
         }

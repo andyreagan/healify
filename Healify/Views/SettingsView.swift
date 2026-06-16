@@ -6,7 +6,6 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var settings: AppSettings
-    @EnvironmentObject private var health: HealthProfileService
     @State private var showingDisclaimer = false
     @State private var exportURL: URL?
     @State private var exportError: String?
@@ -28,16 +27,15 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Picker("Body type", selection: $settings.bodyShapeOverride) {
-                        Text("Automatic").tag("auto")
+                    Picker("Body type", selection: $settings.bodyShapeRaw) {
+                        Text("Neutral").tag("neutral")
                         Text("Masculine").tag("masculine")
                         Text("Feminine").tag("feminine")
-                        Text("Neutral").tag("neutral")
                     }
                 } header: {
                     Text("Body map")
                 } footer: {
-                    Text(bodyMapFooter)
+                    Text("Sets how the body map silhouette looks when marking wound locations.")
                 }
 
                 Section {
@@ -108,15 +106,6 @@ struct SettingsView: View {
                 }
             }
         )
-    }
-
-    private var bodyMapFooter: String {
-        if settings.bodyShapeOverride == "auto" {
-            return health.didRequest
-                ? "Following Apple Health. Choose a type above to override."
-                : "Set how the body map looks. Connect Apple Health (where available) by leaving this on Automatic."
-        }
-        return "Using your manual choice for the body map silhouette."
     }
 
     private func exportBackup() {
@@ -195,6 +184,5 @@ struct AIDisclaimerView: View {
 #Preview {
     SettingsView()
         .environmentObject(AppSettings())
-        .environmentObject(HealthProfileService())
         .modelContainer(PreviewData.container)
 }

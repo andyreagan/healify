@@ -52,5 +52,4 @@ struct RootView: View {
         .modelContainer(PreviewData.container)
         .environmentObject(AppSettings())
         .environmentObject(HealingService())
-        .environmentObject(HealthProfileService())
 }

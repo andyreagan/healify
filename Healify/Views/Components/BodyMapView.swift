@@ -12,7 +12,7 @@ private struct BodySlot: Identifiable {
 }
 
 /// Builds the figure geometry for a given view + body shape. Proportions are
-/// nudged by `BodyShape` (from HealthKit biological sex) so the silhouette
+/// nudged by `BodyShape` (chosen in Settings) so the silhouette
 /// loosely matches the person.
 private enum BodyLayout {
     static func slots(view: BodyView, shape: BodyShape) -> [BodySlot] {

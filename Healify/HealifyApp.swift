@@ -5,7 +5,6 @@ import SwiftData
 struct HealifyApp: App {
     @StateObject private var settings = AppSettings()
     @StateObject private var healingService = HealingService()
-    @StateObject private var healthProfile = HealthProfileService()
 
     /// Single shared SwiftData container for the whole app, driven by a
     /// versioned schema + migration plan so user data survives schema changes.
@@ -42,7 +41,6 @@ struct HealifyApp: App {
                 RootView()
                     .environmentObject(settings)
                     .environmentObject(healingService)
-                    .environmentObject(healthProfile)
                     .tint(.accentColor)
             }
         }

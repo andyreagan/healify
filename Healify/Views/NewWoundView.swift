@@ -6,7 +6,6 @@ import SwiftData
 struct NewWoundView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var health: HealthProfileService
     @EnvironmentObject private var settings: AppSettings
 
     /// When set, the form edits an existing wound instead of creating one.
@@ -43,7 +42,7 @@ struct NewWoundView: View {
 
                 Section {
                     BodyMapView(
-                        shape: settings.resolvedBodyShape(auto: health.bodyShape),
+                        shape: settings.bodyShape,
                         bodyView: $bodyView,
                         selection: region,
                         onTapRegion: { region = $0 }
@@ -85,7 +84,6 @@ struct NewWoundView: View {
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
-            .task { await health.load() }
             .onAppear(perform: loadInitial)
         }
     }
@@ -128,6 +126,5 @@ struct NewWoundView: View {
 #Preview {
     NewWoundView()
         .modelContainer(PreviewData.container)
-        .environmentObject(HealthProfileService())
         .environmentObject(AppSettings())
 }

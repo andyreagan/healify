@@ -20,11 +20,6 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: Healify/Resources/Info.plist
-        # HealthKit (auto body-type from Apple Health) requires a PAID Apple
-        # Developer account to provision. It's OFF by default so the app installs
-        # on a free account; the body map still works via Settings > Body type.
-        # To enable on a paid account, uncomment the line below and regenerate:
-        # CODE_SIGN_ENTITLEMENTS: Healify/Resources/Healify.entitlements
         PRODUCT_BUNDLE_IDENTIFIER: com.andyreagan.healify
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

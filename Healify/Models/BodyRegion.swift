@@ -66,8 +66,7 @@ enum BodyPart: String, Codable, Hashable, CaseIterable {
     }
 }
 
-/// Demographic hint used only to shape the silhouette. Sourced from HealthKit
-/// biological sex when available, otherwise neutral.
+/// Shapes the body-map silhouette. Chosen manually in Settings.
 enum BodyShape: String {
     case masculine, feminine, neutral
 }

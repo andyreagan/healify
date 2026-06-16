@@ -7,7 +7,6 @@ import SwiftData
 struct BulkAddWoundsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var health: HealthProfileService
     @EnvironmentObject private var settings: AppSettings
 
     @State private var regions: [BodyRegion] = []
@@ -22,7 +21,7 @@ struct BulkAddWoundsView: View {
             Form {
                 Section {
                     BodyMapView(
-                        shape: settings.resolvedBodyShape(auto: health.bodyShape),
+                        shape: settings.bodyShape,
                         bodyView: $bodyView,
                         selected: Set(regions),
                         onTapRegion: toggle
@@ -74,7 +73,6 @@ struct BulkAddWoundsView: View {
                     Button("Create \(regions.count)", action: save).disabled(regions.isEmpty)
                 }
             }
-            .task { await health.load() }
         }
     }
 
@@ -107,6 +105,5 @@ struct BulkAddWoundsView: View {
 #Preview {
     BulkAddWoundsView()
         .modelContainer(PreviewData.container)
-        .environmentObject(HealthProfileService())
         .environmentObject(AppSettings())
 }

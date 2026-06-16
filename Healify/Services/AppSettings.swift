@@ -10,17 +10,14 @@ final class AppSettings: ObservableObject {
     /// One-time acknowledgement that scores are not medical advice.
     @AppStorage("aiDisclaimerAcknowledged") var aiDisclaimerAcknowledged: Bool = false
 
-    /// Body-map silhouette: "auto" follows Apple Health (when available),
-    /// otherwise an explicit choice. Lets the body map work without HealthKit.
-    @AppStorage("bodyShapeOverride") var bodyShapeOverride: String = "auto"
+    /// Body-map silhouette, chosen manually in Settings (default neutral).
+    @AppStorage("bodyShapeOverride") var bodyShapeRaw: String = "neutral"
 
-    /// Resolves the silhouette to draw, given the auto-detected Health value.
-    func resolvedBodyShape(auto: BodyShape) -> BodyShape {
-        switch bodyShapeOverride {
+    var bodyShape: BodyShape {
+        switch bodyShapeRaw {
         case "masculine": return .masculine
         case "feminine": return .feminine
-        case "neutral": return .neutral
-        default: return auto
+        default: return .neutral   // includes any legacy "auto" value
         }
     }
 }
