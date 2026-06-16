@@ -31,7 +31,10 @@ final class NoteFlowUITests: XCTestCase {
         let app = launch()
 
         // 1. Create a wound (name only — no body-map tap needed).
-        app.buttons["addMenu"].firstMatch.tap()
+        //    Generous first wait: cold CI runners are slow to boot + render.
+        let addMenu = app.buttons["addMenu"].firstMatch
+        XCTAssertTrue(addMenu.waitForExistence(timeout: 30), "App should launch to the dashboard")
+        addMenu.tap()
         app.buttons["One wound"].tap()
         let name = app.textFields["woundName"]
         XCTAssertTrue(name.waitForExistence(timeout: 5), "New-wound form should appear")

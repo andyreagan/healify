@@ -1,5 +1,7 @@
 # Healify
 
+[![CI](https://github.com/andyreagan/healify/actions/workflows/ci.yml/badge.svg)](https://github.com/andyreagan/healify/actions/workflows/ci.yml)
+
 A native iOS app for tracking wound healing. Photograph one or more wounds over
 time, keep structured notes (pain, symptoms, clinician guidance), and — if you
 opt in — get an **on-device** estimate of healing progress and a projected
