@@ -33,11 +33,27 @@ targets:
         CODE_SIGN_STYLE: Automatic
         # Free "Personal Team" ID, so xcodegen doesn't reset signing on regen.
         DEVELOPMENT_TEAM: R47VDUQCBQ
+  HealifyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: HealifyTests
+    dependencies:
+      - target: Healify
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.andyreagan.healify.tests
+        DEVELOPMENT_TEAM: R47VDUQCBQ
 schemes:
   Healify:
     build:
       targets:
         Healify: all
+        HealifyTests: [test]
+    test:
+      targets:
+        - HealifyTests
     run:
       config: Debug
     archive:

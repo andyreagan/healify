@@ -159,9 +159,7 @@ struct BodyDashboardView: View {
 
     private func delete(_ source: [Wound], at offsets: IndexSet) {
         for index in offsets {
-            let wound = source[index]
-            for photo in wound.photos { ImageStore.delete(photo.imageFilename) }
-            context.delete(wound)
+            Persistence.delete(source[index], from: context)
         }
     }
 }

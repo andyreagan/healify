@@ -11,21 +11,14 @@ struct BodyRegion: Codable, Hashable, Identifiable {
 
     /// Human-readable label, e.g. "Right forearm", "Lower back", "Back of left hand".
     var displayName: String {
-        let core: String
         switch part {
         // Torso parts already imply front/back, so don't prefix them.
         case .chest, .abdomen, .pelvis, .upperBack, .lowerBack, .buttocks, .head, .neck:
-            core = part.label
+            return part.label
         default:
-            // Limb parts: clarify front/back when it's the back view.
-            core = view == .back ? "back of \(part.label.lowercased())" : part.label
-        }
-
-        switch side {
-        case .center:
-            return core.capitalizedFirst
-        case .left, .right:
-            return "\(side.label) \(core.lowercasedFirst)".capitalizedFirst
+            // Limb parts: "Right forearm", or "Back of left hand" for the back view.
+            let sided = side == .center ? part.label : "\(side.label) \(part.label.lowercasedFirst)"
+            return view == .back ? "Back of \(sided.lowercasedFirst)" : sided.capitalizedFirst
         }
     }
 }
