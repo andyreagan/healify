@@ -14,8 +14,12 @@ struct BodyDashboardView: View {
 
     @State private var bodyView: BodyView = .front
     @State private var drawerExpanded = false
-    @State private var showingNewWound = false
-    @State private var presetRegion: BodyRegion?
+    /// Item-driven sheet so the tapped region is reliably passed (an
+    /// isPresented sheet can capture a stale preset).
+    @State private var newWoundRequest: NewWoundRequest?
+    /// Set when a wound is created, so we can navigate to it after the sheet
+    /// dismisses.
+    @State private var createdWoundID: UUID?
 
     private var active: [Wound] { wounds.filter { !$0.isArchived } }
     private var archived: [Wound] { wounds.filter { $0.isArchived } }
@@ -40,13 +44,29 @@ struct BodyDashboardView: View {
             .padding(.bottom, 150) // keep the figure clear of the collapsed drawer
             .frame(maxHeight: .infinity, alignment: .top)
 
-            BottomDrawer(expanded: $drawerExpanded) {
+            BottomDrawer(expanded: $drawerExpanded, minHeight: wounds.isEmpty ? 165 : 130) {
                 drawerContent
             }
         }
-        .task { await health.load() }
-        .sheet(isPresented: $showingNewWound, onDismiss: { presetRegion = nil }) {
-            NewWoundView(presetRegion: presetRegion)
+        .task {
+            await health.load()
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["HEALIFY_OPEN_NEW"] == "1", newWoundRequest == nil {
+                newWoundRequest = NewWoundRequest(region: BodyRegion(part: .forearm, side: .right, view: .front))
+            }
+            #endif
+        }
+        .sheet(item: $newWoundRequest, onDismiss: navigateToCreatedWound) { request in
+            NewWoundView(presetRegion: request.region, onCreate: { createdWoundID = $0.id })
+        }
+    }
+
+    /// Push the just-created wound's timeline so the user lands there ready to
+    /// add a note or photo.
+    private func navigateToCreatedWound() {
+        if let id = createdWoundID {
+            path.append(id)
+            createdWoundID = nil
         }
     }
 
@@ -59,8 +79,7 @@ struct BodyDashboardView: View {
                     .font(.headline)
                 Spacer()
                 Button {
-                    presetRegion = nil
-                    showingNewWound = true
+                    newWoundRequest = NewWoundRequest(region: nil)
                 } label: {
                     Label("Add", systemImage: "plus.circle.fill").labelStyle(.titleAndIcon)
                 }
@@ -95,17 +114,16 @@ struct BodyDashboardView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: "hand.tap")
-                .font(.largeTitle)
-                .foregroundStyle(.secondary)
-            Text("Tap a spot on the body to mark a wound, or use Add above.")
+                .foregroundStyle(Color.accentColor)
+            Text("Tap a spot on the body — or **Add** above — to start your first wound.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
+        .padding(.horizontal)
+        .padding(.top, 4)
     }
 
     // MARK: Actions
@@ -115,8 +133,7 @@ struct BodyDashboardView: View {
         switch here.count {
         case 0:
             // Empty spot → start a new wound pre-located here.
-            presetRegion = region
-            showingNewWound = true
+            newWoundRequest = NewWoundRequest(region: region)
         case 1:
             path.append(here[0].id)
         default:
@@ -132,4 +149,11 @@ struct BodyDashboardView: View {
             context.delete(wound)
         }
     }
+}
+
+/// Identifiable wrapper so the new-wound sheet is item-driven (carries the
+/// tapped region reliably).
+private struct NewWoundRequest: Identifiable {
+    let id = UUID()
+    let region: BodyRegion?
 }

@@ -13,6 +13,8 @@ struct NewWoundView: View {
     var existing: Wound?
     /// Optional region to pre-select (e.g. tapped on the home map).
     var presetRegion: BodyRegion?
+    /// Called with the newly created wound so the caller can navigate to it.
+    var onCreate: ((Wound) -> Void)?
 
     @State private var name = ""
     @State private var detail = ""
@@ -26,8 +28,10 @@ struct NewWoundView: View {
     var body: some View {
         NavigationStack {
             Form {
+                // Text fields kept at the top so the keyboard never covers them.
                 Section {
                     TextField("Name (e.g. Knee scrape)", text: $name)
+                    TextField("Location detail (optional, e.g. 2cm below kneecap)", text: $detail)
                     Picker("Type", selection: $kind) {
                         ForEach(WoundKind.allCases) { k in
                             Label(k.label, systemImage: k.symbol).tag(k)
@@ -50,7 +54,6 @@ struct NewWoundView: View {
                     if let region {
                         LabeledContent("Location", value: region.displayName)
                     }
-                    TextField("Detail (optional, e.g. 2cm below kneecap)", text: $detail)
                 } header: {
                     Text("Where is it?")
                 } footer: {
@@ -115,6 +118,7 @@ struct NewWoundView: View {
             let wound = Wound(name: name, bodyLocation: detail, bodyRegion: region,
                               kind: kind, targetScore: targetScore)
             context.insert(wound)
+            onCreate?(wound)
         }
         dismiss()
     }
