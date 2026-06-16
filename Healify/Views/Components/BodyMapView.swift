@@ -62,8 +62,10 @@ private enum BodyLayout {
 struct BodyMapView: View {
     var shape: BodyShape = .neutral
     @Binding var bodyView: BodyView
-    /// Highlighted region (picker mode).
+    /// Highlighted region (single-picker mode).
     var selection: BodyRegion?
+    /// Highlighted regions (multi-select mode, e.g. bulk create).
+    var selected: Set<BodyRegion> = []
     /// region → wound count (home mode).
     var markers: [BodyRegion: Int] = [:]
     var showsViewToggle: Bool = true
@@ -107,7 +109,7 @@ struct BodyMapView: View {
         let x = rect.minX + slot.center.x * rect.width
         let y = rect.minY + slot.center.y * rect.height
         let count = markers[slot.region] ?? 0
-        let isSelected = selection == slot.region
+        let isSelected = selection == slot.region || selected.contains(slot.region)
 
         shapeFor(slot.kind)
             .fill(fillColor(isSelected: isSelected, count: count))

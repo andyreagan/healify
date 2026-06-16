@@ -14,6 +14,7 @@ struct PhotoDetailView: View {
 
     @State private var fullImage: UIImage?
     @State private var showingDeleteConfirm = false
+    @State private var editorImage: UIImage?
 
     var body: some View {
         ScrollView {
@@ -68,6 +69,15 @@ struct PhotoDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // Load full resolution for editing (not the display thumbnail).
+                    editorImage = ImageStore.loadImage(photo.imageFilename)
+                } label: {
+                    Image(systemName: "crop.rotate")
+                }
+                .disabled(fullImage == nil)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button(role: .destructive) {
                     showingDeleteConfirm = true
                 } label: {
@@ -78,10 +88,30 @@ struct PhotoDetailView: View {
         .confirmationDialog("Delete this photo?", isPresented: $showingDeleteConfirm, titleVisibility: .visible) {
             Button("Delete Photo", role: .destructive, action: deletePhoto)
         }
+        .fullScreenCover(isPresented: Binding(get: { editorImage != nil }, set: { if !$0 { editorImage = nil } })) {
+            if let editorImage {
+                PhotoEditorView(image: editorImage) { edited in applyEdit(edited) }
+            }
+        }
         .task(id: photo.imageFilename) {
             let name = photo.imageFilename
             fullImage = await Task.detached { ImageStore.thumbnail(name, maxPixel: 1600) }.value
         }
+    }
+
+    /// Saves the edited image as a new file, repoints the photo, and invalidates
+    /// the cached AI analysis since the pixels changed.
+    private func applyEdit(_ edited: UIImage) {
+        guard let newName = try? ImageStore.saveImage(edited) else { return }
+        let old = photo.imageFilename
+        photo.imageFilename = newName
+        photo.healingScore = nil
+        photo.rednessIndex = nil
+        photo.featurePrint = nil
+        photo.analysisVersion = nil
+        try? context.save()
+        ImageStore.delete(old)
+        fullImage = ImageStore.thumbnail(newName, maxPixel: 1600)
     }
 
     @ViewBuilder

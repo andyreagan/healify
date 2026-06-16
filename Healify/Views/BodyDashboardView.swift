@@ -20,6 +20,8 @@ struct BodyDashboardView: View {
     /// Set when a wound is created, so we can navigate to it after the sheet
     /// dismisses.
     @State private var createdWoundID: UUID?
+    @State private var showingBulkWounds = false
+    @State private var showingBulkNote = false
 
     private var active: [Wound] { wounds.filter { !$0.isArchived } }
     private var archived: [Wound] { wounds.filter { $0.isArchived } }
@@ -59,6 +61,8 @@ struct BodyDashboardView: View {
         .sheet(item: $newWoundRequest, onDismiss: navigateToCreatedWound) { request in
             NewWoundView(presetRegion: request.region, onCreate: { createdWoundID = $0.id })
         }
+        .sheet(isPresented: $showingBulkWounds) { BulkAddWoundsView() }
+        .sheet(isPresented: $showingBulkNote) { BulkAddNoteView() }
     }
 
     /// Push the just-created wound's timeline so the user lands there ready to
@@ -78,8 +82,19 @@ struct BodyDashboardView: View {
                 Text(active.isEmpty ? "No wounds yet" : "\(active.count) active wound\(active.count == 1 ? "" : "s")")
                     .font(.headline)
                 Spacer()
-                Button {
-                    newWoundRequest = NewWoundRequest(region: nil)
+                Menu {
+                    Button {
+                        newWoundRequest = NewWoundRequest(region: nil)
+                    } label: { Label("One wound", systemImage: "plus") }
+                    Button {
+                        showingBulkWounds = true
+                    } label: { Label("Several wounds…", systemImage: "square.on.square") }
+                    if !active.isEmpty {
+                        Divider()
+                        Button {
+                            showingBulkNote = true
+                        } label: { Label("Log note for several…", systemImage: "square.and.pencil") }
+                    }
                 } label: {
                     Label("Add", systemImage: "plus.circle.fill").labelStyle(.titleAndIcon)
                 }
