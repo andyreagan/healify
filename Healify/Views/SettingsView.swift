@@ -1,9 +1,14 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
     @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var health: HealthProfileService
     @State private var showingDisclaimer = false
+    @State private var exportURL: URL?
+    @State private var exportError: String?
 
     var body: some View {
         NavigationStack {
@@ -17,6 +22,31 @@ struct SettingsView: View {
                     Text("AI")
                 } footer: {
                     Text("All analysis runs on your device using Apple's Vision and Core Image. Photos never leave your phone and nothing is sent to a server.")
+                }
+
+                Section {
+                    Picker("Body type", selection: $settings.bodyShapeOverride) {
+                        Text("Automatic").tag("auto")
+                        Text("Masculine").tag("masculine")
+                        Text("Feminine").tag("feminine")
+                        Text("Neutral").tag("neutral")
+                    }
+                } header: {
+                    Text("Body map")
+                } footer: {
+                    Text(bodyMapFooter)
+                }
+
+                Section {
+                    Button {
+                        exportBackup()
+                    } label: {
+                        Label("Export backup…", systemImage: "square.and.arrow.up")
+                    }
+                } header: {
+                    Text("Your data")
+                } footer: {
+                    Text("Saves all wounds, notes, and photos to a single .zip you can store in Files or iCloud. A good idea before updating the app.")
                 }
 
                 Section("Privacy") {
@@ -43,6 +73,12 @@ struct SettingsView: View {
                     settings.aiScoringEnabled = true
                 }
             }
+            .sheet(item: $exportURL) { url in
+                ShareSheet(items: [url])
+            }
+            .alert("Export failed", isPresented: .init(get: { exportError != nil }, set: { if !$0 { exportError = nil } })) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(exportError ?? "") }
         }
     }
 
@@ -58,6 +94,23 @@ struct SettingsView: View {
                 }
             }
         )
+    }
+
+    private var bodyMapFooter: String {
+        if settings.bodyShapeOverride == "auto" {
+            return health.didRequest
+                ? "Following Apple Health. Choose a type above to override."
+                : "Set how the body map looks. Connect Apple Health (where available) by leaving this on Automatic."
+        }
+        return "Using your manual choice for the body map silhouette."
+    }
+
+    private func exportBackup() {
+        do {
+            exportURL = try DataExport.makeBackup(context)
+        } catch {
+            exportError = error.localizedDescription
+        }
     }
 }
 
@@ -110,5 +163,8 @@ struct AIDisclaimerView: View {
 }
 
 #Preview {
-    SettingsView().environmentObject(AppSettings())
+    SettingsView()
+        .environmentObject(AppSettings())
+        .environmentObject(HealthProfileService())
+        .modelContainer(PreviewData.container)
 }

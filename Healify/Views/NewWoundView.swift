@@ -7,6 +7,7 @@ struct NewWoundView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var health: HealthProfileService
+    @EnvironmentObject private var settings: AppSettings
 
     /// When set, the form edits an existing wound instead of creating one.
     var existing: Wound?
@@ -37,7 +38,7 @@ struct NewWoundView: View {
 
                 Section {
                     BodyMapView(
-                        shape: health.bodyShape,
+                        shape: settings.resolvedBodyShape(auto: health.bodyShape),
                         bodyView: $bodyView,
                         selection: region,
                         onTapRegion: { region = $0 }
@@ -123,4 +124,5 @@ struct NewWoundView: View {
     NewWoundView()
         .modelContainer(PreviewData.container)
         .environmentObject(HealthProfileService())
+        .environmentObject(AppSettings())
 }

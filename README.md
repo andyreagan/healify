@@ -72,11 +72,45 @@ open Healify.xcodeproj
 Then select an iOS 17+ simulator or device and run. The camera requires a real
 device; the Simulator falls back to library import.
 
+### Running on your own iPhone (free Apple ID works)
+
+1. `xcodegen generate && open Healify.xcodeproj`
+2. Select the **Healify** target → **Signing & Capabilities** → check
+   *Automatically manage signing* and pick your **Personal Team** (a free
+   Apple ID is fine).
+3. If you hit a bundle-ID clash, change **Bundle Identifier** to something
+   unique (e.g. `com.yourname.healify`).
+4. Plug in your iPhone, select it as the run destination, and press Run.
+5. On the phone: **Settings → General → VPN & Device Management** → trust your
+   developer certificate. (Free-account builds expire after 7 days — just
+   re-run from Xcode to refresh.)
+
+**HealthKit is off by default** so it installs on a free account. The body map
+still works fully — set the silhouette under **Settings → Body type**. To enable
+auto-detection from Apple Health (needs a *paid* Apple Developer account),
+uncomment the `CODE_SIGN_ENTITLEMENTS` line in `project.yml`, regenerate, and add
+the HealthKit capability.
+
+## Your data & safety
+
+- **Where it lives:** structured data (wounds, notes, photo metadata, scores) in
+  a local SwiftData/SQLite store under Application Support; photo JPEGs as files
+  in `Application Support/WoundImages`; preferences in UserDefaults. No cloud,
+  no analytics, all on-device. Included in iCloud/Finder device backups; wiped
+  only if you delete the app.
+- **Surviving app updates:** the store is driven by a **versioned schema +
+  migration plan** (`SchemaVersions.swift`). Additive changes (new optional
+  fields, new models) migrate automatically with no data loss. Structural
+  changes get an explicit `MigrationStage` so existing data is preserved — the
+  app never silently wipes the store.
+- **Backups:** **Settings → Export backup…** writes a single `.zip` (a
+  `data.json` plus every image) you can save to Files or iCloud. Do this before
+  any risky update as a hard safety net.
+
 ## Privacy
 
-All photos and notes are stored on-device (SwiftData + the app's Application
-Support directory). There is no cloud sync and no analytics. The AI analysis
-runs entirely on-device.
+All photos and notes are stored on-device. There is no cloud sync and no
+analytics. The AI analysis runs entirely on-device.
 
 ## How the healing score works
 

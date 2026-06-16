@@ -7,6 +7,7 @@ import SwiftData
 struct BodyDashboardView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var health: HealthProfileService
+    @EnvironmentObject private var settings: AppSettings
     @Query(sort: \Wound.createdAt, order: .reverse) private var wounds: [Wound]
 
     @Binding var path: [UUID]
@@ -29,7 +30,7 @@ struct BodyDashboardView: View {
     var body: some View {
         ZStack {
             BodyMapView(
-                shape: health.bodyShape,
+                shape: settings.resolvedBodyShape(auto: health.bodyShape),
                 bodyView: $bodyView,
                 markers: markers,
                 onTapRegion: handleTap
