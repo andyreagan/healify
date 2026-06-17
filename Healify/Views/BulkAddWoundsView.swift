@@ -6,7 +6,6 @@ import SwiftData
 struct BulkAddWoundsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var settings: AppSettings
 
     @State private var regions: [BodyRegion] = []
     @State private var names: [String: String] = [:]
@@ -20,7 +19,6 @@ struct BulkAddWoundsView: View {
             Form {
                 Section {
                     BodyMapView(
-                        shape: settings.bodyShape,
                         bodyView: $bodyView,
                         selected: Set(regions),
                         onTapRegion: toggle

@@ -87,12 +87,6 @@ device; the Simulator falls back to library import.
    developer certificate. (Free-account builds expire after 7 days — just
    re-run from Xcode to refresh.)
 
-**HealthKit is off by default** so it installs on a free account. The body map
-still works fully — set the silhouette under **Settings → Body type**. To enable
-auto-detection from Apple Health (needs a *paid* Apple Developer account),
-uncomment the `CODE_SIGN_ENTITLEMENTS` line in `project.yml`, regenerate, and add
-the HealthKit capability.
-
 ## Your data & safety
 
 - **Where it lives:** structured data (wounds, notes, photo metadata, scores) in

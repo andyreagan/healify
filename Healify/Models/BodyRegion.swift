@@ -63,10 +63,6 @@ enum BodyPart: String, Codable, Hashable, CaseIterable {
     }
 }
 
-enum BodyShape: String {
-    case masculine, feminine, neutral
-}
-
 extension String {
     var capitalizedFirst: String { isEmpty ? self : prefix(1).uppercased() + dropFirst() }
     var lowercasedFirst: String { isEmpty ? self : prefix(1).lowercased() + dropFirst() }

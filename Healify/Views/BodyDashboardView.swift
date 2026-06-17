@@ -6,7 +6,6 @@ import SwiftData
 /// into the wound's timeline.
 struct BodyDashboardView: View {
     @Environment(\.modelContext) private var context
-    @EnvironmentObject private var settings: AppSettings
     @Query(sort: \Wound.createdAt, order: .reverse) private var wounds: [Wound]
 
     @Binding var path: [UUID]
@@ -35,7 +34,6 @@ struct BodyDashboardView: View {
     var body: some View {
         ZStack {
             BodyMapView(
-                shape: settings.bodyShape,
                 bodyView: $bodyView,
                 markers: markers,
                 onTapRegion: handleTap

@@ -27,18 +27,6 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Picker("Body type", selection: $settings.bodyShapeRaw) {
-                        Text("Neutral").tag("neutral")
-                        Text("Masculine").tag("masculine")
-                        Text("Feminine").tag("feminine")
-                    }
-                } header: {
-                    Text("Body map")
-                } footer: {
-                    Text("Sets how the body map silhouette looks when marking wound locations.")
-                }
-
-                Section {
                     Button(action: exportBackup) {
                         Label("Export backup…", systemImage: "square.and.arrow.up")
                     }

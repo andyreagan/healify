@@ -4,7 +4,6 @@ import SwiftData
 struct NewWoundView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var settings: AppSettings
 
     var existing: Wound?
     var presetRegion: BodyRegion?
@@ -36,7 +35,6 @@ struct NewWoundView: View {
 
                 Section {
                     BodyMapView(
-                        shape: settings.bodyShape,
                         bodyView: $bodyView,
                         selection: region,
                         onTapRegion: { region = $0 }

@@ -11,13 +11,12 @@ private struct BodySlot: Identifiable {
     var id: String { region.id }
 }
 
-/// Builds figure geometry for a view + body shape; `BodyShape` nudges the
-/// proportions so the silhouette loosely matches the person.
+/// Builds figure geometry for a view.
 private enum BodyLayout {
-    static func slots(view: BodyView, shape: BodyShape) -> [BodySlot] {
-        let shoulderHalf: CGFloat = shape == .masculine ? 0.175 : shape == .feminine ? 0.150 : 0.162
-        let waistHalf: CGFloat = shape == .feminine ? 0.110 : 0.118
-        let hipHalf: CGFloat = shape == .feminine ? 0.165 : shape == .masculine ? 0.140 : 0.150
+    static func slots(view: BodyView) -> [BodySlot] {
+        let shoulderHalf: CGFloat = 0.162
+        let waistHalf: CGFloat = 0.118
+        let hipHalf: CGFloat = 0.150
 
         let torsoUpper: BodyPart = view == .front ? .chest : .upperBack
         let torsoMid: BodyPart = view == .front ? .abdomen : .lowerBack
@@ -59,7 +58,6 @@ private enum BodyLayout {
 /// A stylized, tappable anatomical figure. Used as the location picker (single
 /// `selection`) and the home dashboard (multiple `markers`).
 struct BodyMapView: View {
-    var shape: BodyShape = .neutral
     @Binding var bodyView: BodyView
     /// Highlighted region (single-picker mode).
     var selection: BodyRegion?
@@ -85,7 +83,7 @@ struct BodyMapView: View {
             GeometryReader { geo in
                 let rect = figureRect(in: geo.size)
                 ZStack(alignment: .topLeading) {
-                    ForEach(BodyLayout.slots(view: bodyView, shape: shape)) { slot in
+                    ForEach(BodyLayout.slots(view: bodyView)) { slot in
                         slotView(slot, in: rect)
                     }
                 }
@@ -165,7 +163,6 @@ struct BodyMapView: View {
 #Preview {
     @Previewable @State var view: BodyView = .front
     return BodyMapView(
-        shape: .neutral,
         bodyView: $view,
         selection: BodyRegion(part: .forearm, side: .right, view: .front),
         markers: [BodyRegion(part: .shin, side: .left, view: .front): 2]
