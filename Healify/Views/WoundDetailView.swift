@@ -13,12 +13,24 @@ struct WoundDetailView: View {
     @Bindable var wound: Wound
 
     @State private var pickerItems: [PhotosPickerItem] = []
-    @State private var showingCamera = false
     @State private var showingLibrary = false
     @State private var showingPhotoSource = false
-    @State private var showingEdit = false
-    @State private var showingAddNote = false
-    @State private var editingNote: JournalNote?
+    // One sheet at a time: multiple `.sheet` modifiers on one view present
+    // unreliably in SwiftUI, which made note editing flaky.
+    @State private var sheet: Sheet?
+
+    private enum Sheet: Identifiable {
+        case camera, editWound, addNote
+        case editNote(JournalNote)
+        var id: String {
+            switch self {
+            case .camera: return "camera"
+            case .editWound: return "editWound"
+            case .addNote: return "addNote"
+            case .editNote(let n): return "note-\(n.id)"
+            }
+        }
+    }
     @State private var importing = false
 
     /// A merged, newest-first timeline of photos and notes.
@@ -64,23 +76,29 @@ struct WoundDetailView: View {
         // (PhotosPicker as a modifier — NOT nested in a Menu, which fails to open).
         .confirmationDialog("Add Photo", isPresented: $showingPhotoSource, titleVisibility: .visible) {
             if CameraPicker.isAvailable {
-                Button("Take Photo") { showingCamera = true }
+                Button("Take Photo") { sheet = .camera }
             }
             Button("Choose from Library") { showingLibrary = true }
         }
         .photosPicker(isPresented: $showingLibrary, selection: $pickerItems, maxSelectionCount: 5, matching: .images)
         .onChange(of: pickerItems) { _, items in importPicked(items) }
-        .sheet(isPresented: $showingCamera) {
-            CameraPicker { image in
-                if let photo = PhotoImporter.importCameraImage(image, into: wound, context: context) {
-                    afterAdd(photo)
+        .sheet(item: $sheet) { sheet in
+            switch sheet {
+            case .camera:
+                CameraPicker { image in
+                    if let photo = PhotoImporter.importCameraImage(image, into: wound, context: context) {
+                        afterAdd(photo)
+                    }
                 }
+                .ignoresSafeArea()
+            case .editWound:
+                NewWoundView(existing: wound)
+            case .addNote:
+                AddNoteView(wound: wound)
+            case .editNote(let note):
+                AddNoteView(wound: wound, existing: note)
             }
-            .ignoresSafeArea()
         }
-        .sheet(isPresented: $showingEdit) { NewWoundView(existing: wound) }
-        .sheet(isPresented: $showingAddNote) { AddNoteView(wound: wound) }
-        .sheet(item: $editingNote) { note in AddNoteView(wound: wound, existing: note) }
     }
 
     // MARK: Timeline
@@ -122,7 +140,7 @@ struct WoundDetailView: View {
             .buttonStyle(.plain)
         case .note(let note):
             Button {
-                editingNote = note
+                sheet = .editNote(note)
             } label: {
                 NoteCard(note: note)
             }
@@ -153,7 +171,7 @@ struct WoundDetailView: View {
 
             VStack(spacing: 12) {
                 Button {
-                    showingAddNote = true
+                    sheet = .addNote
                 } label: {
                     Label("Add Note", systemImage: "square.and.pencil")
                         .frame(maxWidth: 260)
@@ -181,7 +199,7 @@ struct WoundDetailView: View {
     private var actionBar: some View {
         HStack(spacing: 12) {
             Button {
-                showingAddNote = true
+                sheet = .addNote
             } label: {
                 Label("Add Note", systemImage: "square.and.pencil").frame(maxWidth: .infinity)
             }
@@ -211,7 +229,7 @@ struct WoundDetailView: View {
         }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Button { showingEdit = true } label: { Label("Edit Wound", systemImage: "pencil") }
+                Button { sheet = .editWound } label: { Label("Edit Wound", systemImage: "pencil") }
                 Button {
                     wound.isArchived.toggle()
                 } label: {
