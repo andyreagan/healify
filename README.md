@@ -2,16 +2,16 @@
 
 [![CI](https://github.com/andyreagan/healify/actions/workflows/ci.yml/badge.svg)](https://github.com/andyreagan/healify/actions/workflows/ci.yml)
 
-Native iOS app for wound healing tracking. Photograph one or more wounds over time, keep structured notes (pain, symptoms, clinician guidance), and — if you opt in — get **on-device** healing-progress estimate plus projected timeline.
+Native iOS app for wound healing tracking. Photograph one or more wounds over time, keep structured notes (pain, symptoms, clinician guidance), and — if you opt in — get an **on-device** healing-progress estimate plus a projected timeline.
 
-Photo journal = core. Everything else build on it.
+Photo journal = core. Everything else builds on it.
 
 ## Features
 
-- **Native (Swift/SwiftUI)** — chosen for photo-first work web can't match:
+- **Native (Swift/SwiftUI)** — chosen for photo-first work the web can't match:
   `ImageIO` EXIF capture timestamps, on-device **Vision**/**Core Image** analysis
   with no network bridge, first-class **PhotoKit**/camera capture.
-- **Multiple wounds**, each own journal, notes, type, healed-goal.
+- **Multiple wounds**, each with its own journal, notes, type, and healed-goal.
 - **Photo journal** grouped by day, with baseline (first) photo and "Day N"
   labels. Take photo or import from library.
 - **Adjustable timestamps** — seeded from EXIF, editable per photo, one-tap
@@ -28,9 +28,9 @@ Photo journal = core. Everything else build on it.
   plan (`SchemaVersions.swift`); **Settings → Export/Import backup** writes one
   self-contained JSON (data *and* embedded photos) for reinstalls or moving phones.
 
-> Healing scores = wellness heuristic from photo color and appearance — not
-> medical diagnosis. App states this explicit and gates analysis behind
-> one-time disclaimer.
+> Healing scores are a wellness heuristic from photo color and appearance — not
+> a medical diagnosis. The app states this explicitly and gates analysis behind
+> a one-time disclaimer.
 
 ## Project layout
 
@@ -80,19 +80,19 @@ Simulator falls back to library import.
 
 ## How the healing score works
 
-For each photo analyzer computes two on-device signals:
+For each photo the analyzer computes two on-device signals:
 
-1. **Inflammation index** — red channel's share of total color
-   (`CIAreaAverage`). Angry/inflamed tissue skews red; falling value across
-   series = primary healing signal.
-2. **Feature print** — Vision descriptor of image's overall appearance,
+1. **Inflammation index** — the red channel's share of total color
+   (`CIAreaAverage`). Angry/inflamed tissue skews red; a falling value across
+   the series is the primary healing signal.
+2. **Feature print** — a Vision descriptor of the image's overall appearance;
    measures how much each photo diverges from baseline and how much
-   it stabilized vs. previous photo.
+   it stabilized vs. the previous photo.
 
-Blended (60% inflammation reduction, 25% divergence-from-baseline,
-15% frame-to-frame stabilization) into 0–100 score. Timeline does
-ordinary-least-squares fit of score vs. time, extrapolates to wound's
-target score, blends with any clinician-provided expected duration.
+These blend (60% inflammation reduction, 25% divergence-from-baseline,
+15% frame-to-frame stabilization) into a 0–100 score. The timeline does an
+ordinary-least-squares fit of score vs. time, extrapolates to the wound's
+target score, and blends with any clinician-provided expected duration.
 
-Intentionally interpretable, not black box — and intentionally
-labeled estimate, not medical advice.
+Intentionally interpretable, not a black box — and deliberately labeled an
+estimate, not medical advice.
