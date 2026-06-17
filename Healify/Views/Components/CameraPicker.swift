@@ -1,9 +1,8 @@
 import SwiftUI
 import UIKit
 
-/// Thin UIKit bridge for capturing a photo with the device camera. Returns the
-/// captured `UIImage`. (Camera is unavailable in the Simulator — the UI falls
-/// back to the library picker there.)
+/// UIKit bridge for capturing a photo with the device camera. (Camera is
+/// unavailable in the Simulator — the UI falls back to the library picker.)
 struct CameraPicker: UIViewControllerRepresentable {
     var onCapture: (UIImage) -> Void
     @Environment(\.dismiss) private var dismiss

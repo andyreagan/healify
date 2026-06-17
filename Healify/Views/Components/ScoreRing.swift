@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A circular progress ring for a 0–100 healing score.
+/// Circular progress ring for a 0–100 healing score.
 struct ScoreRing: View {
     let score: Double
     var size: CGFloat = 120

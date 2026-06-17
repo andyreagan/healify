@@ -1,10 +1,8 @@
 import Foundation
 import SwiftData
 
-/// Restores a journal from a `DataExport` backup file. Merge semantics: wounds
-/// whose id already exists are skipped, so re-importing the same file (or
-/// importing into a non-empty store) won't create duplicates. Images are written
-/// to the store under fresh filenames so they never clobber existing files.
+/// Restores a journal from a `DataExport` backup. Wounds whose id already exists
+/// are skipped (idempotent); images are written under fresh filenames.
 @MainActor
 enum DataImport {
     struct Summary {

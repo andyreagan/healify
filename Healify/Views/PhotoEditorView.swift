@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Crop + rotate editor for a wound photo. The user drags the corner handles to
-/// crop and rotates in 90° steps; "Done" returns the edited image.
+/// Crop + rotate editor for a wound photo. Drag the corner handles to crop,
+/// rotate in 90° steps; "Done" returns the edited image.
 struct PhotoEditorView: View {
     @Environment(\.dismiss) private var dismiss
     let image: UIImage
@@ -91,8 +91,6 @@ struct PhotoEditorView: View {
         }
     }
 
-    // MARK: Actions
-
     private func rotate(_ quarters: Int) {
         working = ImageEditing.rotated(working, quartersClockwise: quarters)
         crop = CGRect(x: 0, y: 0, width: 1, height: 1)
@@ -103,18 +101,13 @@ struct PhotoEditorView: View {
         dismiss()
     }
 
-    // MARK: Gestures
-
     private func moveGesture(_ frame: CGRect) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                let base = baseCrop ?? crop
                 if baseCrop == nil { baseCrop = crop }
-                var r = base
-                r.origin.x = base.origin.x + value.translation.width / frame.width
-                r.origin.y = base.origin.y + value.translation.height / frame.height
-                r.origin.x = min(max(0, r.origin.x), 1 - r.width)
-                r.origin.y = min(max(0, r.origin.y), 1 - r.height)
+                var r = baseCrop!
+                r.origin.x = min(max(0, r.origin.x + value.translation.width / frame.width), 1 - r.width)
+                r.origin.y = min(max(0, r.origin.y + value.translation.height / frame.height), 1 - r.height)
                 crop = r
             }
             .onEnded { _ in baseCrop = nil }
@@ -123,11 +116,10 @@ struct PhotoEditorView: View {
     private func cornerGesture(_ corner: Corner, _ frame: CGRect) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                let base = baseCrop ?? crop
                 if baseCrop == nil { baseCrop = crop }
                 let dx = value.translation.width / frame.width
                 let dy = value.translation.height / frame.height
-                crop = clamp(corner.resize(base, dx: dx, dy: dy))
+                crop = clamp(corner.resize(baseCrop!, dx: dx, dy: dy))
             }
             .onEnded { _ in baseCrop = nil }
     }
@@ -141,8 +133,6 @@ struct PhotoEditorView: View {
         c.size.height = min(max(minSize, c.size.height), 1 - c.origin.y)
         return c
     }
-
-    // MARK: Geometry
 
     /// The rect an aspect-fit image occupies within a container.
     private func fittedRect(_ imageSize: CGSize, in container: CGSize) -> CGRect {

@@ -1,10 +1,8 @@
 import SwiftUI
 
-/// Loads and displays a stored wound photo thumbnail asynchronously so lists
-/// and grids stay smooth. Always fills (and clips to) the frame the caller
-/// gives it, so its layout size is the frame — never the photo's own aspect
-/// ratio. That keeps timeline cards a uniform height regardless of whether the
-/// photo is portrait, landscape, or square.
+/// Loads a stored wound photo thumbnail asynchronously. Uses a GeometryReader so
+/// it always fills (and clips to) the caller's frame rather than the photo's own
+/// aspect ratio, keeping timeline cards a uniform height.
 struct PhotoThumbnail: View {
     let filename: String
     var maxPixel: CGFloat = 600
@@ -28,11 +26,9 @@ struct PhotoThumbnail: View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         }
         .task(id: filename) {
-            if image == nil {
-                let pixel = maxPixel
-                let name = filename
-                image = await Task.detached { ImageStore.thumbnail(name, maxPixel: pixel) }.value
-            }
+            guard image == nil else { return }
+            let (name, pixel) = (filename, maxPixel)
+            image = await Task.detached { ImageStore.thumbnail(name, maxPixel: pixel) }.value
         }
     }
 }

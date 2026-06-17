@@ -1,12 +1,10 @@
 import SwiftUI
 
-/// The reusable set of `Form` sections for editing a `NoteDraft`. Embed inside
-/// a `Form`. Used by AddNoteView, BulkAddNoteView, and BulkAddWoundsView.
+/// Reusable `Form` sections for editing a `NoteDraft`. Embed inside a `Form`.
 struct NoteEditor: View {
     @Binding var draft: NoteDraft
     /// Hide the date picker when the note's time is implied elsewhere.
     var showsDate: Bool = true
-    /// Override the text field prompt.
     var textPrompt: String = "What did you observe?"
 
     var body: some View {

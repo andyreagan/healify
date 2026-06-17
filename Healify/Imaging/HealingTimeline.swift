@@ -10,9 +10,9 @@ struct HealingProjection {
 
     let estimatedDate: Date
     let basis: Basis
-    /// 0–1 rough confidence, mostly a function of how many data points exist.
+    /// 0–1 confidence, mostly a function of how many data points exist.
     let confidence: Double
-    /// Current score per day improvement (nil when clinician-only).
+    /// Score-per-day improvement (nil when clinician-only).
     let ratePerDay: Double?
 
     var basisDescription: String {
@@ -33,15 +33,14 @@ enum HealingTimeline {
 
         switch (trend, clinician) {
         case let (t?, c?):
-            // Weight the trend more as we accumulate photos; clinician anchors
+            // Trend weight grows with confidence; the clinician estimate anchors
             // the early, data-poor phase.
             let tWeight = t.confidence
             let cWeight = 0.6
-            let total = tWeight + cWeight
             let blended = Date(
                 timeIntervalSince1970:
                     (t.estimatedDate.timeIntervalSince1970 * tWeight
-                     + c.estimatedDate.timeIntervalSince1970 * cWeight) / total
+                     + c.estimatedDate.timeIntervalSince1970 * cWeight) / (tWeight + cWeight)
             )
             return HealingProjection(
                 estimatedDate: blended,
@@ -49,12 +48,9 @@ enum HealingTimeline {
                 confidence: min(1, t.confidence + 0.2),
                 ratePerDay: t.ratePerDay
             )
-        case let (t?, nil):
-            return t
-        case let (nil, c?):
-            return c
-        default:
-            return nil
+        case let (t?, nil): return t
+        case let (nil, c?): return c
+        default: return nil
         }
     }
 
@@ -79,12 +75,10 @@ enum HealingTimeline {
         guard slope > 0.05 else { return nil } // stalled or worsening → no estimate
 
         let remaining = wound.targetScore - last.score
-        guard remaining > 0 else {
-            // Already at/over target.
+        guard remaining > 0 else { // already at/over target
             return HealingProjection(estimatedDate: last.date, basis: .trend, confidence: 0.9, ratePerDay: slope)
         }
-        let daysToTarget = remaining / slope
-        let estimated = last.date.addingTimeInterval(daysToTarget * 86_400)
+        let estimated = last.date.addingTimeInterval(remaining / slope * 86_400)
 
         // Confidence grows with sample count and observed span.
         let spanDays = last.day - baselineDay
@@ -92,13 +86,11 @@ enum HealingTimeline {
         return HealingProjection(estimatedDate: estimated, basis: .trend, confidence: confidence, ratePerDay: slope)
     }
 
-    /// Uses the most recent clinician-guidance note carrying an expected number
-    /// of days, anchored at that note's date.
+    /// Most recent clinician-guidance note with expected days, anchored at its date.
     private static func projectFromClinician(for wound: Wound) -> HealingProjection? {
         let guidance = wound.notes
             .filter { $0.isClinicianGuidance && ($0.expectedHealingDays ?? 0) > 0 }
-            .sorted { $0.timestamp > $1.timestamp }
-            .first
+            .max { $0.timestamp < $1.timestamp }
         guard let guidance, let days = guidance.expectedHealingDays else { return nil }
         let estimated = guidance.timestamp.addingTimeInterval(Double(days) * 86_400)
         return HealingProjection(estimatedDate: estimated, basis: .clinician, confidence: 0.5, ratePerDay: nil)

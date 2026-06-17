@@ -1,9 +1,8 @@
 import SwiftUI
 import SwiftData
 
-/// Create several wounds at once — tap each spot on the body map — sharing a
-/// type and one initial note (e.g. all happened in the same fall). Each wound
-/// gets its own copy of the note.
+/// Create several wounds at once by tapping spots on the body map, sharing a
+/// type and one optional initial note. Each wound gets its own copy of the note.
 struct BulkAddWoundsView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -87,8 +86,8 @@ struct BulkAddWoundsView: View {
 
     private func save() {
         for region in regions {
-            let custom = names[region.id]?.trimmingCharacters(in: .whitespaces)
-            let name = (custom?.isEmpty == false) ? custom! : region.displayName
+            let custom = names[region.id]?.trimmingCharacters(in: .whitespaces) ?? ""
+            let name = custom.isEmpty ? region.displayName : custom
             let wound = Wound(name: name, bodyRegion: region, kind: kind)
             context.insert(wound)
             if addInitialNote && !draft.isEmpty {

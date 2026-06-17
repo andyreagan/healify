@@ -1,18 +1,13 @@
 import SwiftUI
 import SwiftData
 
-/// Create (or edit) a wound. Location is chosen by tapping the anatomical body
-/// map rather than typed.
 struct NewWoundView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var settings: AppSettings
 
-    /// When set, the form edits an existing wound instead of creating one.
     var existing: Wound?
-    /// Optional region to pre-select (e.g. tapped on the home map).
     var presetRegion: BodyRegion?
-    /// Called with the newly created wound so the caller can navigate to it.
     var onCreate: ((Wound) -> Void)?
 
     @State private var name = ""
@@ -27,7 +22,6 @@ struct NewWoundView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Text fields kept at the top so the keyboard never covers them.
                 Section {
                     TextField("Name (e.g. Knee scrape)", text: $name)
                         .accessibilityIdentifier("woundName")

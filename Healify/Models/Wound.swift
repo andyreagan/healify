@@ -1,25 +1,20 @@
 import Foundation
 import SwiftData
 
-/// A single wound being tracked. The core unit of the app: the user can have
-/// several wounds at once, each with its own photo journal and notes.
+/// A single wound being tracked, each with its own photo journal and notes.
 @Model
 final class Wound {
-    /// Stable identifier, handy for diffing and for AI/analysis caches.
     @Attribute(.unique) var id: UUID
     var name: String
-    /// Optional free-text detail to refine the body-map location, e.g. "2cm
-    /// below the kneecap".
+    /// Free-text detail refining the body-map location, e.g. "2cm below knee".
     var bodyLocation: String
-    /// Structured anatomical location chosen on the body map.
     var bodyRegion: BodyRegion?
     var kind: WoundKind
     var createdAt: Date
-    /// When archived, the wound is considered healed/closed and hidden from the
-    /// active list, but kept for history.
+    /// Archived wounds are treated as healed: hidden from the active list, kept
+    /// for history.
     var isArchived: Bool
-    /// Healing score (0–100) the user is aiming for before considering the
-    /// wound resolved. Used by the timeline projection.
+    /// Target healing score (0–100) for the timeline projection.
     var targetScore: Double
 
     @Relationship(deleteRule: .cascade, inverse: \WoundPhoto.wound)
@@ -52,8 +47,7 @@ final class Wound {
 }
 
 extension Wound {
-    /// Photos ordered by the (possibly user-adjusted) capture date — this is the
-    /// chronological journal the rest of the app reasons about.
+    /// Photos oldest-first by capture date — the chronological journal.
     var photosByDate: [WoundPhoto] {
         photos.sorted { $0.captureDate < $1.captureDate }
     }
@@ -63,7 +57,7 @@ extension Wound {
         notes.sorted { $0.timestamp > $1.timestamp }
     }
 
-    /// Best label for the wound's location: structured region plus any detail.
+    /// Location label: structured region plus any free-text detail.
     var locationDescription: String {
         switch (bodyRegion, bodyLocation.isEmpty) {
         case let (region?, false): return "\(region.displayName) · \(bodyLocation)"
@@ -75,8 +69,6 @@ extension Wound {
 
     var baselinePhoto: WoundPhoto? { photosByDate.first }
     var latestPhoto: WoundPhoto? { photosByDate.last }
-
-    /// The most recent computed healing score, if AI scoring has run.
     var latestScore: Double? { latestPhoto?.healingScore }
 }
 

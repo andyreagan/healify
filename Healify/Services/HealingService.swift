@@ -1,12 +1,8 @@
 import Foundation
 import SwiftData
 
-/// Drives on-device analysis for a wound: extracts any missing photo features
-/// off the main thread, then computes and persists healing scores.
-///
-/// Heavy Core Image / Vision work runs in a detached task on the raw image
-/// bytes; only the cheap model writes happen back on the main actor where the
-/// SwiftData context lives.
+/// Drives on-device analysis: heavy Core Image / Vision work runs off the main
+/// thread; cheap model writes happen back on the main actor with the context.
 @MainActor
 final class HealingService: ObservableObject {
     @Published private(set) var isAnalyzing = false
@@ -21,13 +17,12 @@ final class HealingService: ObservableObject {
         let photos = wound.photosByDate
         guard !photos.isEmpty else { return }
 
-        // 1. Compute features for photos that lack them (or are stale).
+        // Compute features for photos that lack them (or are stale).
         let stale = photos.filter {
             $0.rednessIndex == nil || $0.analysisVersion != HealingAnalyzer.version
         }
         for (index, photo) in stale.enumerated() {
             let filename = photo.imageFilename
-            // Read + analyze off the main thread.
             let features: PhotoFeatures? = await Task.detached(priority: .userInitiated) {
                 guard let data = ImageStore.loadData(filename) else { return nil }
                 return HealingAnalyzer.features(for: data)
@@ -41,7 +36,7 @@ final class HealingService: ObservableObject {
             progress = Double(index + 1) / Double(stale.count) * 0.8
         }
 
-        // 2. Score the whole series relative to the baseline.
+        // Score the whole series relative to the baseline.
         let samples = photos.map {
             HealingScoring.Sample(id: $0.id, redness: $0.rednessIndex ?? 0, featurePrint: $0.featurePrint)
         }

@@ -2,8 +2,6 @@ import SwiftUI
 import SwiftData
 import Charts
 
-/// The opt-in AI overview: on-device healing score, baseline-vs-latest compare,
-/// score trend, and a timeline projection blended with clinician guidance.
 struct OverviewView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var settings: AppSettings
@@ -51,8 +49,6 @@ struct OverviewView: View {
         wound.photosByDate.filter { $0.healingScore != nil }
     }
 
-    // MARK: Opt-in
-
     private var optInCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Image(systemName: "wand.and.stars")
@@ -80,8 +76,6 @@ struct OverviewView: View {
         .padding()
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
     }
-
-    // MARK: Score
 
     private var scoreHeader: some View {
         HStack(spacing: 20) {
@@ -125,15 +119,12 @@ struct OverviewView: View {
         return "\(max(0, days)) day\(days == 1 ? "" : "s")"
     }
 
-    /// Surfaces an infection caution if recent notes flag warning symptoms.
     private var infectionWarning: String? {
         let recent = wound.notes.filter { $0.timestamp > Date.now.addingTimeInterval(-3 * 86_400) }
         let flags = Set(recent.flatMap(\.symptoms)).filter(\.isInfectionFlag)
         guard !flags.isEmpty else { return nil }
         return "Possible infection signs noted — consider contacting a clinician."
     }
-
-    // MARK: Analyze controls
 
     private var analyzeControls: some View {
         VStack(spacing: 8) {
@@ -152,8 +143,6 @@ struct OverviewView: View {
             }
         }
     }
-
-    // MARK: Timeline
 
     private func timelineCard(_ projection: HealingProjection) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -175,8 +164,6 @@ struct OverviewView: View {
         .padding()
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
     }
-
-    // MARK: Trend chart
 
     private var trendChart: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -206,8 +193,6 @@ struct OverviewView: View {
         .padding()
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
     }
-
-    // MARK: Baseline vs latest
 
     @ViewBuilder
     private var comparisonCard: some View {

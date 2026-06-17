@@ -1,8 +1,6 @@
 import SwiftUI
 import SwiftData
 
-/// Add or edit a single structured note on one wound. Uses the shared
-/// `NoteEditor`. When `existing` is set, it edits (and can delete) that note.
 struct AddNoteView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -23,11 +21,8 @@ struct AddNoteView: View {
 
                 if isEditing {
                     Section {
-                        Button(role: .destructive) {
-                            showingDeleteConfirm = true
-                        } label: {
-                            Label("Delete Note", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
+                        Button(role: .destructive) { showingDeleteConfirm = true } label: {
+                            Label("Delete Note", systemImage: "trash").frame(maxWidth: .infinity)
                         }
                     }
                 }
@@ -39,8 +34,7 @@ struct AddNoteView: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
-                        .disabled(draft.isEmpty)
+                    Button("Save", action: save).disabled(draft.isEmpty)
                 }
             }
             .confirmationDialog("Delete this note?", isPresented: $showingDeleteConfirm, titleVisibility: .visible) {
@@ -70,8 +64,7 @@ struct AddNoteView: View {
 
     private func delete() {
         if let existing {
-            // Remove from the relationship explicitly so the observing timeline
-            // updates immediately, then delete from the store.
+            // Remove from the relationship so the timeline updates immediately.
             wound.notes.removeAll { $0 == existing }
             context.delete(existing)
             try? context.save()

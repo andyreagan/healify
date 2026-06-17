@@ -39,14 +39,10 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Button {
-                        exportBackup()
-                    } label: {
+                    Button(action: exportBackup) {
                         Label("Export backup…", systemImage: "square.and.arrow.up")
                     }
-                    Button {
-                        showingImporter = true
-                    } label: {
+                    Button { showingImporter = true } label: {
                         Label("Import backup…", systemImage: "square.and.arrow.down")
                     }
                 } header: {
@@ -133,7 +129,6 @@ struct SettingsView: View {
     }
 }
 
-/// One-time disclaimer shown before enabling AI scoring.
 struct AIDisclaimerView: View {
     @Environment(\.dismiss) private var dismiss
     var onAccept: () -> Void
@@ -155,9 +150,7 @@ struct AIDisclaimerView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
-                    Button {
-                        onAccept(); dismiss()
-                    } label: {
+                    Button { onAccept(); dismiss() } label: {
                         Text("I Understand — Enable").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)

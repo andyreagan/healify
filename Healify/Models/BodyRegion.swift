@@ -1,7 +1,6 @@
 import Foundation
 
-/// A structured anatomical location for a wound, chosen by tapping the body map
-/// rather than typing. Stored on `Wound` as a Codable value.
+/// A structured anatomical location for a wound, stored on `Wound` as Codable.
 struct BodyRegion: Codable, Hashable, Identifiable {
     var part: BodyPart
     var side: BodySide
@@ -9,14 +8,12 @@ struct BodyRegion: Codable, Hashable, Identifiable {
 
     var id: String { "\(view.rawValue).\(side.rawValue).\(part.rawValue)" }
 
-    /// Human-readable label, e.g. "Right forearm", "Lower back", "Back of left hand".
+    /// e.g. "Right forearm", "Lower back", "Back of left hand".
     var displayName: String {
         switch part {
-        // Torso parts already imply front/back, so don't prefix them.
         case .chest, .abdomen, .pelvis, .upperBack, .lowerBack, .buttocks, .head, .neck:
-            return part.label
+            return part.label // torso parts already imply front/back
         default:
-            // Limb parts: "Right forearm", or "Back of left hand" for the back view.
             let sided = side == .center ? part.label : "\(side.label) \(part.label.lowercasedFirst)"
             return view == .back ? "Back of \(sided.lowercasedFirst)" : sided.capitalizedFirst
         }
@@ -66,7 +63,6 @@ enum BodyPart: String, Codable, Hashable, CaseIterable {
     }
 }
 
-/// Shapes the body-map silhouette. Chosen manually in Settings.
 enum BodyShape: String {
     case masculine, feminine, neutral
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// One tappable region of the body map: an anatomical region plus its drawn
-/// shape and position in a normalized 0–1 canvas.
+/// A tappable region: anatomical region plus its drawn shape and position in a
+/// normalized 0–1 canvas.
 private struct BodySlot: Identifiable {
     enum Kind { case ellipse, capsule, roundedRect }
     let region: BodyRegion
@@ -11,9 +11,8 @@ private struct BodySlot: Identifiable {
     var id: String { region.id }
 }
 
-/// Builds the figure geometry for a given view + body shape. Proportions are
-/// nudged by `BodyShape` (chosen in Settings) so the silhouette
-/// loosely matches the person.
+/// Builds figure geometry for a view + body shape; `BodyShape` nudges the
+/// proportions so the silhouette loosely matches the person.
 private enum BodyLayout {
     static func slots(view: BodyView, shape: BodyShape) -> [BodySlot] {
         let shoulderHalf: CGFloat = shape == .masculine ? 0.175 : shape == .feminine ? 0.150 : 0.162
@@ -57,8 +56,8 @@ private enum BodyLayout {
     }
 }
 
-/// A stylized, tappable anatomical figure. Used both as the location picker
-/// (single `selection`) and the home dashboard (multiple `markers`).
+/// A stylized, tappable anatomical figure. Used as the location picker (single
+/// `selection`) and the home dashboard (multiple `markers`).
 struct BodyMapView: View {
     var shape: BodyShape = .neutral
     @Binding var bodyView: BodyView
@@ -99,8 +98,6 @@ struct BodyMapView: View {
             }
         }
     }
-
-    // MARK: Drawing
 
     @ViewBuilder
     private func slotView(_ slot: BodySlot, in rect: CGRect) -> some View {

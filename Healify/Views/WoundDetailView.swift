@@ -2,9 +2,6 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 
-/// One wound, one screen: a compact healing summary on top, a single
-/// chronological timeline mixing photos and notes, and centered primary actions
-/// (Add Note is the clear first action).
 struct WoundDetailView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var settings: AppSettings
@@ -33,7 +30,6 @@ struct WoundDetailView: View {
     }
     @State private var importing = false
 
-    /// A merged, newest-first timeline of photos and notes.
     private enum Entry: Identifiable {
         case photo(WoundPhoto)
         case note(JournalNote)
@@ -60,11 +56,7 @@ struct WoundDetailView: View {
 
     var body: some View {
         Group {
-            if isEmpty {
-                emptyState
-            } else {
-                timeline
-            }
+            if isEmpty { emptyState } else { timeline }
         }
         .navigationTitle(wound.name)
         .navigationBarTitleDisplayMode(.inline)
@@ -101,14 +93,10 @@ struct WoundDetailView: View {
         }
     }
 
-    // MARK: Timeline
-
     private var timeline: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                NavigationLink {
-                    OverviewView(wound: wound)
-                } label: {
+                NavigationLink { OverviewView(wound: wound) } label: {
                     HealingSummaryCard(wound: wound)
                 }
                 .buttonStyle(.plain)
@@ -132,23 +120,15 @@ struct WoundDetailView: View {
     private func timelineRow(_ entry: Entry) -> some View {
         switch entry {
         case .photo(let photo):
-            NavigationLink {
-                PhotoDetailView(photo: photo, wound: wound)
-            } label: {
+            NavigationLink { PhotoDetailView(photo: photo, wound: wound) } label: {
                 PhotoTimelineCard(photo: photo, wound: wound)
             }
             .buttonStyle(.plain)
         case .note(let note):
-            Button {
-                sheet = .editNote(note)
-            } label: {
-                NoteCard(note: note)
-            }
-            .buttonStyle(.plain)
+            Button { sheet = .editNote(note) } label: { NoteCard(note: note) }
+                .buttonStyle(.plain)
         }
     }
-
-    // MARK: Empty state — centered primary actions
 
     private var emptyState: some View {
         VStack(spacing: 24) {
@@ -170,20 +150,14 @@ struct WoundDetailView: View {
             .padding(.horizontal, 32)
 
             VStack(spacing: 12) {
-                Button {
-                    sheet = .addNote
-                } label: {
-                    Label("Add Note", systemImage: "square.and.pencil")
-                        .frame(maxWidth: 260)
+                Button { sheet = .addNote } label: {
+                    Label("Add Note", systemImage: "square.and.pencil").frame(maxWidth: 260)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
 
-                Button {
-                    showingPhotoSource = true
-                } label: {
-                    Label("Add Photo", systemImage: "camera")
-                        .frame(maxWidth: 260)
+                Button { showingPhotoSource = true } label: {
+                    Label("Add Photo", systemImage: "camera").frame(maxWidth: 260)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
@@ -194,20 +168,14 @@ struct WoundDetailView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: Persistent action bar (non-empty)
-
     private var actionBar: some View {
         HStack(spacing: 12) {
-            Button {
-                sheet = .addNote
-            } label: {
+            Button { sheet = .addNote } label: {
                 Label("Add Note", systemImage: "square.and.pencil").frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
 
-            Button {
-                showingPhotoSource = true
-            } label: {
+            Button { showingPhotoSource = true } label: {
                 Label("Add Photo", systemImage: "camera").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -221,18 +189,14 @@ struct WoundDetailView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            NavigationLink {
-                OverviewView(wound: wound)
-            } label: {
+            NavigationLink { OverviewView(wound: wound) } label: {
                 Image(systemName: "chart.xyaxis.line")
             }
         }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button { sheet = .editWound } label: { Label("Edit Wound", systemImage: "pencil") }
-                Button {
-                    wound.isArchived.toggle()
-                } label: {
+                Button { wound.isArchived.toggle() } label: {
                     Label(wound.isArchived ? "Mark Active" : "Mark Healed",
                           systemImage: wound.isArchived ? "arrow.uturn.backward" : "checkmark.seal")
                 }
@@ -241,8 +205,6 @@ struct WoundDetailView: View {
             }
         }
     }
-
-    // MARK: Photo import
 
     private func importPicked(_ items: [PhotosPickerItem]) {
         guard !items.isEmpty else { return }
@@ -269,8 +231,6 @@ struct WoundDetailView: View {
     }
 }
 
-/// Compact healing summary shown atop the timeline. Tapping opens the full
-/// analysis; when AI is off, it's a slim opt-in prompt.
 private struct HealingSummaryCard: View {
     @EnvironmentObject private var settings: AppSettings
     let wound: Wound
@@ -307,7 +267,6 @@ private struct HealingSummaryCard: View {
     }
 }
 
-/// A photo entry in the timeline.
 private struct PhotoTimelineCard: View {
     @EnvironmentObject private var settings: AppSettings
     let photo: WoundPhoto

@@ -1,17 +1,12 @@
 import Foundation
 import UIKit
 
-/// Stores wound photos as files on disk and hands back the filenames that the
-/// SwiftData models reference. Keeping image bytes out of the database keeps
-/// queries fast and the store file small.
-///
-/// Files live in `Application Support/WoundImages`, which is backed up but not
-/// user-visible. A small in-memory thumbnail cache keeps scrolling smooth.
+/// Stores wound photos as files in `Application Support/WoundImages` and hands
+/// back the filenames the SwiftData models reference, keeping image bytes out of
+/// the database. An in-memory thumbnail cache keeps scrolling smooth.
 enum ImageStore {
     private static let directoryName = "WoundImages"
     private static let thumbnailCache = NSCache<NSString, UIImage>()
-
-    /// Compression used when persisting full images.
     private static let jpegQuality: CGFloat = 0.9
 
     static var directory: URL {
@@ -27,10 +22,7 @@ enum ImageStore {
         directory.appendingPathComponent(filename)
     }
 
-    // MARK: Writing
-
-    /// Persists raw image data (preserving EXIF) and returns the generated
-    /// filename. Prefer this for imported photos so metadata survives.
+    /// Persists raw image data (preserving EXIF) and returns the new filename.
     @discardableResult
     static func saveOriginalData(_ data: Data) throws -> String {
         let filename = "\(UUID().uuidString).jpg"
@@ -38,8 +30,7 @@ enum ImageStore {
         return filename
     }
 
-    /// Persists a `UIImage` as JPEG. Used for camera captures where we already
-    /// have a `UIImage`.
+    /// Persists a `UIImage` as JPEG (for camera captures).
     @discardableResult
     static func saveImage(_ image: UIImage) throws -> String {
         guard let data = image.jpegData(compressionQuality: jpegQuality) else {
@@ -47,8 +38,6 @@ enum ImageStore {
         }
         return try saveOriginalData(data)
     }
-
-    // MARK: Reading
 
     static func loadImage(_ filename: String) -> UIImage? {
         UIImage(contentsOfFile: url(for: filename).path)
@@ -58,8 +47,7 @@ enum ImageStore {
         try? Data(contentsOf: url(for: filename))
     }
 
-    /// Returns a downsampled thumbnail suitable for grid/list display, cached
-    /// by filename + pixel size.
+    /// Downsampled thumbnail for grid/list display, cached by filename + size.
     static func thumbnail(_ filename: String, maxPixel: CGFloat = 600) -> UIImage? {
         let key = "\(filename)@\(Int(maxPixel))" as NSString
         if let cached = thumbnailCache.object(forKey: key) { return cached }
@@ -68,16 +56,12 @@ enum ImageStore {
         return image
     }
 
-    // MARK: Deleting
-
     static func delete(_ filename: String) {
         try? FileManager.default.removeItem(at: url(for: filename))
     }
 
-    // MARK: Helpers
-
-    /// Memory-efficient downsampling via ImageIO so large camera photos don't
-    /// get fully decoded just to show a thumbnail.
+    /// Memory-efficient ImageIO downsampling — avoids fully decoding large photos
+    /// just to show a thumbnail.
     private static func downsample(url: URL, maxPixel: CGFloat) -> UIImage? {
         let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
         guard let source = CGImageSourceCreateWithURL(url as CFURL, sourceOptions) else { return nil }

@@ -1,9 +1,6 @@
 import SwiftUI
 import SwiftData
 
-/// Full-size photo with editable capture timestamp, caption, analysis readout,
-/// and delete. Adjusting the timestamp is what keeps the timeline accurate when
-/// EXIF is missing or wrong.
 struct PhotoDetailView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -21,7 +18,6 @@ struct PhotoDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 imageView
 
-                // Capture date — adjustable.
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Capture date & time", systemImage: "clock")
                         .font(.headline)
@@ -50,7 +46,6 @@ struct PhotoDetailView: View {
                 .padding()
                 .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
 
-                // Caption
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Caption", systemImage: "text.alignleft").font(.headline)
                     TextField("Add a caption…", text: $photo.caption, axis: .vertical)
@@ -69,18 +64,14 @@ struct PhotoDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    // Load full resolution for editing (not the display thumbnail).
-                    editorImage = ImageStore.loadImage(photo.imageFilename)
-                } label: {
+                // Load full resolution for editing, not the display thumbnail.
+                Button { editorImage = ImageStore.loadImage(photo.imageFilename) } label: {
                     Image(systemName: "crop.rotate")
                 }
                 .disabled(fullImage == nil)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button(role: .destructive) {
-                    showingDeleteConfirm = true
-                } label: {
+                Button(role: .destructive) { showingDeleteConfirm = true } label: {
                     Image(systemName: "trash")
                 }
             }
@@ -90,7 +81,7 @@ struct PhotoDetailView: View {
         }
         .fullScreenCover(isPresented: Binding(get: { editorImage != nil }, set: { if !$0 { editorImage = nil } })) {
             if let editorImage {
-                PhotoEditorView(image: editorImage) { edited in applyEdit(edited) }
+                PhotoEditorView(image: editorImage, onComplete: applyEdit)
             }
         }
         .task(id: photo.imageFilename) {
@@ -99,8 +90,7 @@ struct PhotoDetailView: View {
         }
     }
 
-    /// Saves the edited image as a new file, repoints the photo, and invalidates
-    /// the cached AI analysis since the pixels changed.
+    /// Saves a new file and clears the cached analysis since the pixels changed.
     private func applyEdit(_ edited: UIImage) {
         guard let newName = try? ImageStore.saveImage(edited) else { return }
         let old = photo.imageFilename

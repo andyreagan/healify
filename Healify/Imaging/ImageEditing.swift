@@ -2,8 +2,8 @@ import UIKit
 
 /// Pixel-accurate rotate/crop helpers used by the photo editor.
 enum ImageEditing {
-    /// Re-draws an image so its pixel data matches its display orientation
-    /// (`.up`), making subsequent pixel crops predictable.
+    /// Redraws an image so its pixels match the `.up` orientation, making
+    /// subsequent pixel crops predictable.
     static func normalized(_ image: UIImage) -> UIImage {
         guard image.imageOrientation != .up else { return image }
         let format = UIGraphicsImageRendererFormat.default()
@@ -36,8 +36,7 @@ enum ImageEditing {
         }
     }
 
-    /// Crops to a normalized rect (0–1, origin top-left, in the image's display
-    /// space).
+    /// Crops to a normalized rect (0–1, origin top-left, in display space).
     static func cropped(_ image: UIImage, to rect: CGRect) -> UIImage {
         let base = normalized(image)
         guard let cg = base.cgImage else { return base }

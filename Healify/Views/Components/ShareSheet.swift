@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Minimal UIKit share-sheet bridge for presenting exported files.
+/// UIKit share-sheet bridge for presenting exported files.
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
 

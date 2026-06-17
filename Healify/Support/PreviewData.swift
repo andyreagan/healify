@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-/// In-memory sample data for SwiftUI previews. Not used by the shipping app.
+/// In-memory sample data for SwiftUI previews.
 enum PreviewData {
     @MainActor
     static let container: ModelContainer = {
@@ -14,7 +14,6 @@ enum PreviewData {
                          createdAt: .now.addingTimeInterval(-12 * 86_400))
         context.insert(knee)
 
-        // A few dated notes.
         let n1 = JournalNote(timestamp: .now.addingTimeInterval(-11 * 86_400),
                              text: "Cleaned and dressed. Stings a bit.", painLevel: 5,
                              symptoms: [.redness, .swelling])

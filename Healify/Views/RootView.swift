@@ -14,9 +14,7 @@ struct RootView: View {
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showingSettings = true
-                        } label: {
+                        Button { showingSettings = true } label: {
                             Image(systemName: "gearshape")
                         }
                     }
@@ -28,9 +26,7 @@ struct RootView: View {
                         ContentUnavailableView("Wound not found", systemImage: "questionmark")
                     }
                 }
-                .sheet(isPresented: $showingSettings) {
-                    SettingsView()
-                }
+                .sheet(isPresented: $showingSettings) { SettingsView() }
                 .task { seedIfNeeded() }
         }
     }

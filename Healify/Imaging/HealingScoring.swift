@@ -1,15 +1,9 @@
 import Foundation
 
-/// Turns the per-photo features (redness + feature prints) of a wound series
-/// into 0–100 healing scores, each relative to the first photo (the baseline).
-///
-/// The score blends three on-device signals:
-///   • inflammation reduction vs. baseline (primary — wounds redden when angry)
-///   • visual divergence from baseline (scabbing/closing changes appearance)
-///   • frame-to-frame stabilization (a settling wound stops changing)
-///
-/// This is deliberately interpretable rather than a black box, and it is a
-/// wellness heuristic — not a medical assessment.
+/// Turns a wound series' per-photo features into 0–100 healing scores relative
+/// to the baseline (first photo), blending three signals: inflammation reduction
+/// vs. baseline, visual divergence from baseline, and frame-to-frame settling.
+/// A wellness heuristic, not a medical assessment.
 enum HealingScoring {
     // Tunable references for normalizing raw signals into 0–1.
     private static let skinRedReference = 0.36      // typical red-share of healthy skin
@@ -20,7 +14,7 @@ enum HealingScoring {
     private static let wClosure = 0.25
     private static let wStability = 0.15
 
-    /// A lightweight snapshot of one photo's cached analysis.
+    /// A snapshot of one photo's cached analysis.
     struct Sample {
         let id: UUID
         let redness: Double
@@ -42,21 +36,18 @@ enum HealingScoring {
                 continue
             }
 
-            // 1. Inflammation reduction vs. baseline.
-            let rednessProgress: Double
-            if r0 - rTarget > 0.0001 {
-                rednessProgress = clamp((r0 - sample.redness) / (r0 - rTarget), 0, 1)
-            } else {
-                rednessProgress = 0.5
-            }
+            // Inflammation reduction vs. baseline.
+            let rednessProgress = r0 - rTarget > 0.0001
+                ? clamp((r0 - sample.redness) / (r0 - rTarget), 0, 1)
+                : 0.5
 
-            // 2. Divergence from baseline appearance.
+            // Divergence from baseline appearance.
             var closureProgress = 0.0
             if let d = HealingAnalyzer.distance(baseline.featurePrint, sample.featurePrint) {
                 closureProgress = Double(clamp(d / closureReference, 0, 1))
             }
 
-            // 3. Settling relative to the previous photo.
+            // Settling relative to the previous photo.
             var stability = 0.0
             if let prevPrint = samples[index - 1].featurePrint,
                let d = HealingAnalyzer.distance(prevPrint, sample.featurePrint) {

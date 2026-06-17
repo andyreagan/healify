@@ -1,14 +1,11 @@
 import Foundation
 import ImageIO
 
-/// Reads the original capture timestamp embedded in an image's metadata.
-///
-/// We prefer the EXIF *DateTimeOriginal* (when the shutter fired) and fall back
-/// to the TIFF *DateTime*. This is what lets imported library photos land on
-/// the correct day in the healing timeline instead of "now".
+/// Reads the original capture timestamp from an image's metadata (EXIF
+/// DateTimeOriginal, falling back to TIFF DateTime), so imported photos land on
+/// the right day in the timeline instead of "now".
 enum ExifReader {
-    /// EXIF/TIFF dates are stored as "yyyy:MM:dd HH:mm:ss" in the photo's local
-    /// time with no zone, so we parse in the current calendar.
+    // EXIF/TIFF dates are zone-less local time, so parse in the current calendar.
     private static let formatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "yyyy:MM:dd HH:mm:ss"

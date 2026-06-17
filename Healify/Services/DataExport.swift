@@ -1,16 +1,12 @@
 import Foundation
 import SwiftData
 
-/// Exports/imports the entire journal as a single self-contained `.json` backup
-/// with images embedded (base64). One file → trivial, dependency-free round-trip
-/// (iOS has no built-in unzip), and a hard safety net independent of schema
-/// migrations: even a full delete/reinstall or a new phone can be restored.
+/// Exports the journal as one self-contained `.json` backup with images embedded
+/// as base64 — a dependency-free, schema-migration-independent restore path.
 @MainActor
 enum DataExport {
     static let formatVersion = 1
     static let fileExtension = "json"
-
-    // MARK: Codable bundle
 
     struct Bundle: Codable {
         var formatVersion: Int
@@ -56,10 +52,7 @@ enum DataExport {
         var expectedHealingDays: Int?
     }
 
-    // MARK: Export
-
-    /// Builds the backup file and returns its URL (in a temp dir). Caller
-    /// presents a share sheet; the OS copies it wherever the user chooses.
+    /// Builds the backup file in a temp dir and returns its URL for sharing.
     static func makeBackup(_ context: ModelContext) throws -> URL {
         let wounds = try context.fetch(FetchDescriptor<Wound>())
 

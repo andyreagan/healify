@@ -5,37 +5,26 @@ import UIKit
 
 /// On-device image features extracted from a single wound photo.
 struct PhotoFeatures {
-    /// Inflammation index in 0–1: the red channel's share of total luminance
-    /// within the frame. Inflamed tissue skews red, so a falling value across a
-    /// series is a healing signal.
+    /// Inflammation index 0–1: red channel's share of the frame. A falling value
+    /// across a series is a healing signal.
     let rednessIndex: Double
-    /// Archived `VNFeaturePrintObservation` describing the image's overall
-    /// appearance, used to measure visual divergence between photos.
+    /// Archived `VNFeaturePrintObservation`, used to measure visual divergence.
     let featurePrint: Data?
 }
 
-/// Runs entirely on the device — no network, no third-party services. Combines
-/// a Core Image color metric with a Vision feature print.
-///
-/// IMPORTANT: this is a heuristic wellness aid, not a medical diagnosis. The
-/// score reflects visual inflammation and change over time, nothing more, and
-/// the UI says so.
+/// On-device wound analysis: a Core Image color metric plus a Vision feature
+/// print. A heuristic wellness aid, not a medical diagnosis.
 enum HealingAnalyzer {
     /// Bump when the algorithm changes so cached scores get recomputed.
     static let version = 1
 
     private static let context = CIContext(options: [.workingColorSpace: NSNull()])
 
-    // MARK: Feature extraction
-
     static func features(for imageData: Data) -> PhotoFeatures {
-        let redness = rednessIndex(for: imageData)
-        let print = featurePrint(for: imageData)
-        return PhotoFeatures(rednessIndex: redness, featurePrint: print)
+        PhotoFeatures(rednessIndex: rednessIndex(for: imageData), featurePrint: featurePrint(for: imageData))
     }
 
-    /// Average red share across the frame using a single Core Image area-average
-    /// pass (cheap, GPU-backed).
+    /// Average red share across the frame via one Core Image area-average pass.
     private static func rednessIndex(for imageData: Data) -> Double {
         guard let ciImage = CIImage(data: imageData) else { return 0 }
         let extent = ciImage.extent

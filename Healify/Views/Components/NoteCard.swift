@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// A single journal note rendered as a card: clinician tag, timestamp, text,
-/// pain, expected-days, and symptom chips.
+/// A journal note as a card: clinician tag, timestamp, text, pain, expected
+/// days, and symptom chips.
 struct NoteCard: View {
     let note: JournalNote
 

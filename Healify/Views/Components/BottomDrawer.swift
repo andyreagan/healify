@@ -35,24 +35,22 @@ struct BottomDrawer<Content: View>: View {
     }
 
     private var handle: some View {
-        VStack(spacing: 8) {
-            Capsule()
-                .fill(Color(.systemGray3))
-                .frame(width: 40, height: 5)
-                .padding(.top, 8)
-        }
-        .frame(maxWidth: .infinity)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture()
-                .updating($dragTranslation) { value, state, _ in state = value.translation.height }
-                .onEnded { value in
-                    // Up = expand, down = collapse (with a small velocity assist).
-                    let projected = value.translation.height + value.predictedEndTranslation.height * 0.2
-                    if projected < -40 { expanded = true }
-                    else if projected > 40 { expanded = false }
-                }
-        )
-        .onTapGesture { expanded.toggle() }
+        Capsule()
+            .fill(Color(.systemGray3))
+            .frame(width: 40, height: 5)
+            .padding(.top, 8)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture()
+                    .updating($dragTranslation) { value, state, _ in state = value.translation.height }
+                    .onEnded { value in
+                        // Up = expand, down = collapse (with a small velocity assist).
+                        let projected = value.translation.height + value.predictedEndTranslation.height * 0.2
+                        if projected < -40 { expanded = true }
+                        else if projected > 40 { expanded = false }
+                    }
+            )
+            .onTapGesture { expanded.toggle() }
     }
 }

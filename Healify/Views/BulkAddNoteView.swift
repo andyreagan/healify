@@ -1,8 +1,8 @@
 import SwiftUI
 import SwiftData
 
-/// Logs the same note against several wounds at once — e.g. "changed all
-/// dressings". Each selected wound gets its own copy of the note.
+/// Logs the same note against several wounds at once. Each selected wound gets
+/// its own copy of the note.
 struct BulkAddNoteView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss

@@ -2,11 +2,9 @@ import Foundation
 import SwiftData
 import UIKit
 
-/// Centralizes turning raw photos into persisted `WoundPhoto` rows: writes the
-/// image to disk and seeds the capture date from EXIF when possible.
+/// Turns raw photos into persisted `WoundPhoto` rows, writing the image to disk.
 enum PhotoImporter {
-    /// Import from raw image data (e.g. PhotosPicker), preserving EXIF and using
-    /// its original capture date for the timeline.
+    /// Import raw image data (e.g. PhotosPicker), using its EXIF capture date.
     @discardableResult
     @MainActor
     static func importData(_ data: Data, into wound: Wound, context: ModelContext) -> WoundPhoto? {
@@ -23,8 +21,7 @@ enum PhotoImporter {
         return photo
     }
 
-    /// Import a freshly captured camera image. No EXIF, so the capture date is
-    /// now (the user can still adjust it later).
+    /// Import a freshly captured camera image. No EXIF, so capture date is now.
     @discardableResult
     @MainActor
     static func importCameraImage(_ image: UIImage, into wound: Wound, context: ModelContext) -> WoundPhoto? {

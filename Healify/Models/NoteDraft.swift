@@ -1,7 +1,7 @@
 import Foundation
 
-/// A mutable, view-friendly draft of a journal note. Shared by single-note,
-/// bulk-note, and bulk-wound-create flows so the note fields stay consistent.
+/// A mutable, view-friendly draft of a journal note, shared across the note and
+/// wound-create flows.
 struct NoteDraft {
     var timestamp: Date = .now
     var text: String = ""
@@ -12,13 +12,11 @@ struct NoteDraft {
     var hasExpectedDays: Bool = false
     var expectedDays: Double = 14
 
-    /// True when there's nothing worth saving.
     var isEmpty: Bool {
         text.trimmingCharacters(in: .whitespaces).isEmpty && symptoms.isEmpty && !recordPain && !isClinician
     }
 
-    /// Materializes a fresh `JournalNote` (unattached). Call once per wound for
-    /// bulk flows so each wound gets its own note instance.
+    /// A fresh unattached `JournalNote`. Call once per wound in bulk flows.
     func makeNote() -> JournalNote {
         JournalNote(
             timestamp: timestamp,
@@ -30,7 +28,6 @@ struct NoteDraft {
         )
     }
 
-    /// Writes the draft's values back onto an existing note.
     func apply(to note: JournalNote) {
         note.timestamp = timestamp
         note.text = text
@@ -42,8 +39,8 @@ struct NoteDraft {
 }
 
 extension NoteDraft {
-    /// Seeds a draft from an existing note (for editing). In an extension so the
-    /// synthesized `NoteDraft()` memberwise initializer is preserved.
+    /// Seeds a draft from an existing note. In an extension so the synthesized
+    /// memberwise initializer is preserved.
     init(from note: JournalNote) {
         self.init()
         timestamp = note.timestamp

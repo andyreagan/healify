@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Shared formatting helpers and the color scale used for healing scores.
 enum Format {
     static func day(_ date: Date) -> String {
         date.formatted(.dateTime.month(.abbreviated).day().year())
@@ -22,7 +21,7 @@ enum Format {
 }
 
 extension Double {
-    /// Maps a 0–100 healing score to a traffic-light-ish color.
+    /// 0–100 healing score → traffic-light color.
     var scoreColor: Color {
         switch self {
         case ..<25: return .red
@@ -34,7 +33,7 @@ extension Double {
 }
 
 extension Int {
-    /// Pain 0–10 to color (green calm → red severe).
+    /// Pain 0–10 → color (green calm → red severe).
     var painColor: Color {
         switch self {
         case ..<3: return .green

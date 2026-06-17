@@ -2,27 +2,16 @@ import Foundation
 import SwiftData
 
 /// A structured journal note attached to a wound.
-///
-/// Always carries a timestamp. Pain is an optional 0–10 score. A note can also
-/// be flagged as clinician guidance and carry an expected number of days to
-/// heal, which feeds the timeline projection.
 @Model
 final class JournalNote {
     @Attribute(.unique) var id: UUID
     var timestamp: Date
     var text: String
-
     /// Optional subjective pain, 0 (none) – 10 (worst). Nil = not recorded.
     var painLevel: Int?
-
-    /// Structured symptom flags the user can toggle.
     var symptoms: [Symptom]
-
-    /// Marks this note as coming from / summarizing a clinician.
     var isClinicianGuidance: Bool
-
-    /// A doctor's expected time-to-heal in days, used to anchor the projection
-    /// when present. Only meaningful on clinician-guidance notes.
+    /// Doctor's expected time-to-heal in days; anchors the projection when set.
     var expectedHealingDays: Int?
 
     var wound: Wound?

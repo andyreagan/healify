@@ -3,10 +3,9 @@ import Foundation
 import SwiftData
 import UIKit
 
-/// Developer-only sample data, gated behind launch env vars so it never affects
-/// normal use:
-///   SIMCTL_CHILD_HEALIFY_SEED=1        seed sample wounds (only if store empty)
-///   SIMCTL_CHILD_HEALIFY_OPEN_FIRST=1  deep-link straight into the first wound
+/// Developer-only sample data, gated behind launch env vars (pass via simctl as
+/// SIMCTL_CHILD_HEALIFY_SEED / SIMCTL_CHILD_HEALIFY_OPEN_FIRST) so it never
+/// affects normal use.
 enum DebugSeed {
     private static func flag(_ key: String) -> Bool {
         ProcessInfo.processInfo.environment[key] == "1" || UserDefaults.standard.bool(forKey: key)
@@ -55,8 +54,7 @@ enum DebugSeed {
         try? context.save()
     }
 
-    /// Runs the real analyzer + scorer over a wound's photos (used by seed so the
-    /// AI screens have data without manual steps).
+    /// Runs the real analyzer + scorer so the AI screens have data without manual steps.
     @MainActor
     private static func analyze(_ wound: Wound) {
         let photos = wound.photosByDate
@@ -72,9 +70,8 @@ enum DebugSeed {
         for photo in photos { photo.healingScore = scores[photo.id] }
     }
 
-    /// Round-trips the current store through export → import (fresh in-memory
-    /// store) and prints the result. Run with SIMCTL_CHILD_HEALIFY_SELFTEST=1
-    /// and `simctl launch --console`.
+    /// Round-trips the store through export → import and prints the result.
+    /// Run with SIMCTL_CHILD_HEALIFY_SELFTEST=1 and `simctl launch --console`.
     @MainActor
     static func selfTestBackupIfRequested(_ context: ModelContext) {
         guard flag("HEALIFY_SELFTEST") else { return }
@@ -104,9 +101,8 @@ enum DebugSeed {
 
     private static func day(_ offset: Int) -> Date { Date().addingTimeInterval(Double(offset) * 86_400) }
 
-    /// A synthetic skin-tone tile with a reddish "wound" blob whose intensity is
-    /// driven by `redness` (1 = angry, 0 = calm).
-    private static func makeWoundImage(redness: Double, size: CGSize = CGSize(width: 400, height: 400)) -> UIImage {
+    /// Synthetic skin-tone tile with a reddish "wound" blob; `redness` 1 = angry, 0 = calm.
+    private static func makeWoundImage(redness: Double, size: CGSize) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { ctx in
             UIColor(red: 0.86, green: 0.70, blue: 0.60, alpha: 1).setFill()
