@@ -21,7 +21,7 @@ struct SettingsView: View {
                         Toggle("Auto-analyze when adding photos", isOn: $settings.autoAnalyzeOnAdd)
                     }
                 } header: {
-                    Text("AI")
+                    Text("Analysis")
                 } footer: {
                     Text("All analysis runs on your device using Apple's Vision and Core Image. Photos never leave your phone and nothing is sent to a server.")
                 }

@@ -9,20 +9,11 @@ timeline.
 
 The photo journal is the core. Everything else builds on it.
 
-## Why native (Swift/SwiftUI), not React Native
-
-Photos are the heart of this app, and native has a real edge here:
-
-- **EXIF/metadata** — `ImageIO` reads each photo's original capture timestamp
-  so imported photos land on the correct day in the timeline (and you can
-  adjust it).
-- **On-device AI** — Apple's **Vision** (`VNGenerateImageFeaturePrint`) and
-  **Core Image** (`CIAreaAverage`) analyze photos locally, with no bridge and no
-  network. Nothing leaves the device.
-- **PhotoKit / camera** — direct, first-class access to capture and import.
-
 ## Features
 
+- **Native (Swift/SwiftUI)** — chosen for photo-first work the web can't match:
+  `ImageIO` EXIF capture timestamps, on-device **Vision**/**Core Image** analysis
+  with no network bridge, and first-class **PhotoKit**/camera capture.
 - **Multiple wounds**, each with its own journal, notes, type, and healed-goal.
 - **Photo journal** grouped by day, with a baseline (first) photo and "Day N"
   labels. Take a photo or import from the library.
@@ -109,7 +100,7 @@ device; the Simulator falls back to library import.
 ## Privacy
 
 All photos and notes are stored on-device. There is no cloud sync and no
-analytics. The AI analysis runs entirely on-device.
+analytics. The image analysis runs entirely on-device.
 
 ## How the healing score works
 
